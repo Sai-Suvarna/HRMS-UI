@@ -1,0 +1,24 @@
+/* src/pages/HomePage.css */
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    background-color: #ede7e7; 
+    min-height: 100vh; 
+    display: flex;
+    flex-direction: column;
+    
+  }
+  
+  h1 {
+    color: #333;
+    font-size: 2.5rem;
+    margin-top: 20px;
+  }
+  
+  p {
+    font-size: 1.2rem;
+    color: #555;
+  }
+  
