@@ -1,6 +1,6 @@
+import React, { useEffect, useState } from 'react'; // Ensure this line is present
 import Navbar from './Navbar';
 import axios from 'axios';
-import React, { useState } from 'react';
 import { Form, Input, Button, DatePicker, Select, message, Tabs, Divider } from 'antd';
 import moment from 'moment';
 import './EmployeeSetup.css'; 
@@ -13,6 +13,13 @@ const { TabPane } = Tabs;
 const EmployeeSetup = () => {
   const [form] = Form.useForm();
   const [activeTabKey, setActiveTabKey] = useState('1'); // State to keep track of the active tab
+  const [compensationSettings, setCompensationSettings] = useState({});
+  useEffect(() => {
+    const storedData = JSON.parse(localStorage.getItem('payrollData'));
+    if (storedData) {
+      setCompensationSettings(storedData);
+    }
+  }, []);
 
   const handleTabChange = (key) => {
     setActiveTabKey(key); // Update the active tab key
@@ -60,7 +67,7 @@ const EmployeeSetup = () => {
 
   return (
     <div>
-              <Navbar />  {/* Add Navbar here */}
+    <Navbar />  {/* Add Navbar here */}
 
     <div className="employee-setup">
       <div>
@@ -255,9 +262,9 @@ const EmployeeSetup = () => {
                     </Select>
                   </Form.Item>
                 </div>
-                </div>
-                <div className="form-row">
+              </div>
 
+              <div className="form-row">
                 <div className="form-col">
                   <Form.Item label="Educational Qualification" name={['personal_details', 'educationalQualification']} rules={[{ required: true, message: 'Please enter educational qualification' }]}>
                     <Input />
@@ -278,9 +285,9 @@ const EmployeeSetup = () => {
                     <DatePicker format="YYYY-MM-DD" />
                   </Form.Item>
                 </div>
-                </div>
-                <div className="form-row">
+              </div>
 
+              <div className="form-row">
                 <div className="form-col">
                   <Form.Item label="Current Address" name={['personal_details', 'currentAddress']} rules={[{ required: true, message: 'Please enter current address' }]}>
                     <Input.TextArea />
@@ -296,9 +303,9 @@ const EmployeeSetup = () => {
                   <Input />
                   </Form.Item>
                 </div>
-                </div>
-                <div className="form-row">
+              </div>
 
+              <div className="form-row">
                 <div className="form-col">
                   <Form.Item label="Emergency Contact" name={['personal_details', 'emergencyContact']} rules={[{ required: true, message: 'Please enter emergency phone number' }]}>
                   <Input />
@@ -314,9 +321,9 @@ const EmployeeSetup = () => {
                     <Input />
                   </Form.Item>
                 </div>
-                </div>
-                <div className="form-row">
+              </div>
 
+              <div className="form-row">
                 <div className="form-col">
                   <Form.Item label="Blood Group" name={['personal_details', 'bloodGroup']} rules={[{ required: true, message: 'Please enter blood group' }]}>
                     <Input />
@@ -396,12 +403,85 @@ const EmployeeSetup = () => {
                 </div>
               </div>
             </TabPane>
+
+            <TabPane tab="Salary details" key="5">
+              <div className="form-row">
+                <div className="form-col">
+                  <Form.Item label="Employee CTC" name={['salary_details', 'CTCpayAMT']} rules={[{ required: true, message: 'Please enter Employee CTC value' }]}>
+                    <Input />
+                  </Form.Item>
+                </div>
+
+                <div className="form-col">
+                  <Form.Item label="Basic Pay" name={['salary_details', 'BasicpayAMT']} rules={[{ required: true, message: 'Please enter Basic pay value' }]}>
+                    <Input />
+                  </Form.Item>
+                </div>
+
+                <div className="form-col">
+                  <Form.Item label="HRA pay" name={['salary_details', 'HRApayAMT']} rules={[{ required: true, message: 'Please enter HRA pay value' }]}>
+                    <Input />
+                  </Form.Item>
+                </div>
+              </div>
+                            
+              {/* Dynamically render fields based on fetched compensation settings  */}
+              {compensationSettings?.advances && (
+              <div className="form-col">
+                <Form.Item label="Advances" name={['salary_details', 'advances']}>
+                  <Input />
+                </Form.Item>
+              </div>
+              )}
+              {compensationSettings?.variable_pay && (
+                <div className="form-col">
+                  <Form.Item label="Variable Pay" name={['salary_details', 'variablePayAMT']}>
+                    <Input />
+                  </Form.Item>
+                </div>
+              )}
+              {compensationSettings?.quarterly_allowance && (
+              <div className="form-col">
+                <Form.Item label="Quarterly Allowance" name={['salary_details', 'QAllowanceAMT']}>
+                  <Input />
+                </Form.Item>
+              </div>
+              )}
+              {compensationSettings?.quarterly_bonus && (
+              <div className="form-col">
+                <Form.Item label="Quarterly Bonus" name={['salary_details', 'QBonusAMT']}>
+                  <Input />
+                </Form.Item>
+              </div>
+              )}
+              {compensationSettings?.annual_bonus && (
+              <div className="form-col">
+                <Form.Item label="Annual Bonus:" name={['salary_details', 'ABonusAMT']}>
+                  <Input />
+                </Form.Item>
+              </div>
+              )}
+              {compensationSettings?.special_allowances && (
+              <div className="form-col">
+                <Form.Item label="Special Allowances:" name={['salary_details', 'SAllowancesAMT']}>
+                  <Input />
+                </Form.Item>
+              </div>
+              )}
+              {compensationSettings?.deductions && (
+              <div className="form-col">
+                <Form.Item label="Deductibles & Loans:" name={['salary_details', 'DLoansAMT']}>
+                  <Input />
+                </Form.Item>
+              </div>
+              )}
+            </TabPane>
           </Tabs>
 
           <Divider />
 
           {/* Conditionally render the submit button */}
-          {activeTabKey === '4' && (
+          {activeTabKey === '5' && (
             <Form.Item>
               <Button type="primary" htmlType="submit">
                 Submit
