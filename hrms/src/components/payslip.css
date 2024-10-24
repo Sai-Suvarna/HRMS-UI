@@ -1,0 +1,25 @@
+/* Example styling for Payslip */
+#payslip-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+  }
+  
+  #payslip-table th, #payslip-table td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: left;
+  }
+  
+  #payslip-table th {
+    background-color: #ececec;
+  }
+  
+  #payslip-table tbody tr:nth-child(even) {
+    background-color: #fafafa;
+  }
+  
+  button {
+    margin-top: 20px;
+  }
+  

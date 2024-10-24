@@ -46,7 +46,127 @@ const CompanySetup = () => {
     setStep(step - 1);
   };
 
+  // new roles
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault();
+  //   const formData = new FormData();
 
+  //   formData.append('companyName', formValues.companyName);
+  //   formData.append('companyRegisteredId', formValues.companyRegisteredId);
+  //   formData.append('address', formValues.address);
+  //   formData.append('adminEmail', formValues.adminEmail);
+  //   formData.append('adminName', formValues.adminName);
+  //   formData.append('adminPhoneNum', formValues.adminPhoneNum);
+  //   formData.append('gst', formValues.gst);
+  //   formData.append('pan', formValues.pan);
+  //   formData.append('tan', formValues.tan);
+
+   
+  //   if (formValues.coi) formData.append('coi', formValues.coi);
+  //   if (formValues.logo) formData.append('logo', formValues.logo);
+  //   if (formValues.leavePolicy) formData.append('leavePolicy', formValues.leavePolicy);
+  //   if (formValues.pfPolicy) formData.append('pfPolicy', formValues.pfPolicy);
+  //   if (formValues.labourLawLicence) formData.append('labourLawLicence', formValues.labourLawLicence);
+
+  //   try {
+  //     const response = await axios.post('http://localhost:8000/api/companydetails/', formData, {
+  //       headers: {
+  //         'Content-Type': 'multipart/form-data',
+  //       },
+  //     });
+  //     if (response.status === 201) {
+  //       setMessage('Successfully submitted');
+  //       const companyId = response.data.companyId;
+  //       // Check if companyId is defined
+  //       if (companyId) {
+  //         // Save the companyId to local storage
+  //         localStorage.setItem('companyId', companyId);
+  //         console.log("Company Id", companyId);
+  //         // Update completion status
+  //         await updateCompletionStatus(companyId);
+  //         navigate('/payrolesetup'); 
+          
+  //       } else {
+  //         console.error('Company Id is undefined in the response');
+  //       }
+  //     }
+  //   } catch (error) {
+  //     console.error('Error submitting form', error.response.data);
+  //   }
+  // };
+
+  // const updateCompletionStatus = async (companyId) => {
+  //   try {
+  //     await axios.patch(`http://localhost:8000/api/company/${companyId}/`, {
+  //       is_company_details_completed: true,
+  //       is_payroll_setup_completed: false, // Adjust based on your application flow
+  //     });
+  //   } catch (error) {
+  //     console.error('Error updating completion status', error);
+  //   }
+  // };
+//   const handleSubmit = async (e) => {
+//     e.preventDefault();
+//     const formData = new FormData();
+
+//     formData.append('companyName', formValues.companyName);
+//     formData.append('companyRegisteredId', formValues.companyRegisteredId);
+//     formData.append('address', formValues.address);
+//     formData.append('adminEmail', formValues.adminEmail);
+//     formData.append('adminName', formValues.adminName);
+//     formData.append('adminPhoneNum', formValues.adminPhoneNum);
+//     formData.append('gst', formValues.gst);
+//     formData.append('pan', formValues.pan);
+//     formData.append('tan', formValues.tan);
+
+//     // Append optional files
+//     if (formValues.logo) formData.append('logo', formValues.logo);
+//     if (formValues.leavePolicy) formData.append('leavePolicy', formValues.leavePolicy);
+//     if (formValues.pfPolicy) formData.append('pfPolicy', formValues.pfPolicy);
+//     if (formValues.labourLawLicence) formData.append('labourLawLicence', formValues.labourLawLicence);
+
+//     try {
+//         const response = await axios.post('http://localhost:8000/api/companydetails/', formData, {
+//             headers: {
+//                 'Content-Type': 'multipart/form-data',
+//                 'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+//             },
+//         });
+
+//         if (response.status === 201) {
+//             setMessage('Successfully submitted');
+//             const companyId = response.data.companyId;
+//             if (companyId) {
+//                 localStorage.setItem('companyId', companyId);
+//                 console.log("Company Id", companyId);
+//                 await updateCompletionStatus(companyId);
+//                 navigate('/payrolesetup');
+//             } else {
+//                 console.error('Company Id is undefined in the response');
+//             }
+//         }
+//     } catch (error) {
+//         console.error('Error submitting form', error.response.data);
+//     }
+// };
+
+// const updateCompletionStatus = async () => {
+//   const userId = localStorage.getItem('userId');  // Retrieve the user ID
+//   const companyId = localStorage.getItem('companyId');
+//   try {
+//       await axios.patch(`http://localhost:8000/api/company-status/${userId}/`, {
+//           is_company_setup_complete: true,
+//           role: 'admin',
+//           company_id: companyId,
+//       }, {
+//           headers: {
+//               'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+//           },
+//       });
+//   } catch (error) {
+//       console.error('Error updating completion status', error);
+//   }
+// };
   const handleSubmit = async (e) => {
     e.preventDefault();
     const formData = new FormData();
@@ -61,37 +181,71 @@ const CompanySetup = () => {
     formData.append('pan', formValues.pan);
     formData.append('tan', formValues.tan);
 
-   
-    if (formValues.coi) formData.append('coi', formValues.coi);
+    // Append optional files
     if (formValues.logo) formData.append('logo', formValues.logo);
     if (formValues.leavePolicy) formData.append('leavePolicy', formValues.leavePolicy);
     if (formValues.pfPolicy) formData.append('pfPolicy', formValues.pfPolicy);
     if (formValues.labourLawLicence) formData.append('labourLawLicence', formValues.labourLawLicence);
 
+    // Retrieve the user_id from localStorage
+    const userId = localStorage.getItem('userId');
+    if (!userId) {
+        console.error('No user ID found in localStorage');
+        return;
+    }
+    formData.append('user_id', userId);  // Add user_id to form data
     try {
-      const response = await axios.post('http://localhost:8000/api/companydetails/', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-      if (response.status === 201) {
-        setMessage('Successfully submitted');
-        const companyId = response.data.companyId;
-        // Check if companyId is defined
-        if (companyId) {
-          // Save the companyId to local storage
-          localStorage.setItem('companyId', companyId);
-          console.log("Company Id", companyId);
-          navigate('/payrolesetup'); 
-          
-        } else {
-          console.error('Company Id is undefined in the response');
+        const response = await axios.post('http://localhost:8000/api/companydetails/', formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+                'Authorization': `Bearer ${localStorage.getItem('refresh')}`,
+                
+            },
+        });
+        
+        if (response.status === 201) {
+            setMessage('Successfully submitted');
+            const companyId = response.data.companyId;
+
+            if (companyId) {
+                // Save the companyId to localStorage and log it for debugging
+                localStorage.setItem('companyId', companyId);
+                console.log("Company Id:", companyId);
+
+                // Call function to update completion status
+                await updateCompletionStatus(companyId);
+                navigate('/payrolesetup');
+            } else {
+                console.error('Company Id is undefined in the response');
+            }
         }
-      }
     } catch (error) {
-      console.error('Error submitting form', error.response.data);
+        console.error('Error submitting form:', error.response.data);
     }
   };
+  
+  const updateCompletionStatus = async () => {
+    const userId = localStorage.getItem('userId');  // Retrieve the user ID
+    const companyId = localStorage.getItem('companyId');  // Ensure companyId is retrieved
+  
+    try {
+        await axios.patch(`http://localhost:8000/api/company-status/${userId}/`, {
+            company_id: companyId,  // Ensure this is sent
+            is_company_setup_complete: true,
+            role: "admin",
+            is_admin: true
+        }, {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+            },
+        });
+    } catch (error) {
+        console.error('Error updating completion status', error);
+    }
+  };
+
+
+
 
   return (
     <div>

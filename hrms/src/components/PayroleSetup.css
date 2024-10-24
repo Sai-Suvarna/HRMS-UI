@@ -29,7 +29,7 @@ html, body {
     overflow-y: auto; 
 }
 
-.table-container {
+/* .table-container {
   width: 50%;
   padding: 10px;
   padding-bottom: 30px;
@@ -60,7 +60,57 @@ html, body {
 .total-row {
   background-color: #d0e7ff; 
   font-weight: bold;
+  
+} */
+
+.table-container {
+  width: 50%;  /* Ensure the container width is reasonable */
+  padding: 10px;
+  padding-bottom: 30px;
+  background-color: white; 
+  border-radius: 18px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); 
+  margin-left: 10px;
+  margin-right: 40px;
 }
+
+.table-container table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0 auto;
+}
+
+.table-container th,
+.table-container td {
+  padding: 4px 10px;  /* Adjusted padding */
+  border: 1px solid #ddd;
+  text-align: left;
+}
+
+.table-container th {
+  background-color: #f1f1f1; 
+}
+
+.total-row {
+  background-color: #d0e7ff; 
+  font-weight: bold;
+}
+
+.table-container td {
+  width: 25%;  /* Ensure consistent width between columns */
+}
+
+/* Set table layout to auto to avoid excessive column expansion */
+.table-container table {
+  table-layout: auto;
+}
+
+/* Adjust font size to make table more compact */
+.table-container th, 
+.table-container td {
+  font-size: 14px;
+}
+
 .ctc-info {
   text-align: left;
   color: gray;
@@ -107,11 +157,11 @@ h3 {
 .form-group input[type="file"],
 .form-group select,
 .form-group textarea {
-    flex: 0;
+    flex:0px;
     padding: 8px;
     border: 1px solid #ddd;
     border-radius: 4px;
-    min-width: 250px; 
+    min-width: 8px; 
 }
 
 .checkbox-group {
@@ -156,6 +206,57 @@ button:hover {
     margin-top: 10px;
     text-align: center;
 }
+.demo-payslip-heading {
+  text-align: center;
+  color: rgb(7, 7, 7);
+  font-size: 34px;
+  margin-top: 5px;
+  margin-bottom: 10px;
+  font-weight: bold;
+}
+
+/* Adjusting alignment and sizing for the reimbursement section */
+.reimbursement-group {
+  margin-bottom: 20px;
+}
+
+.reimbursement-item {
+  display: flex;
+  justify-content: space-between;
+  /* justify-content:space-around; */
+  align-items: left;
+  margin-bottom: 10px;
+}
+
+.reimbursement-input-label,
+.reimbursement-input {
+  padding: 6px;
+  font-size: 14px;
+  color: #aaa;  
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+
+.reimbursement-input-label {
+  flex: 0;
+  margin-right: 10px;
+  text-align: right;  
+}
+
+.reimbursement-input {
+  flex: 0;
+  text-align: center;  /* Aligning text to the right */
+}
+
+/* Adjust form input sizes to match the other input fields */
+.reimbursement-input-label input,
+.reimbursement-input input {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+
 
 @media (max-width: 768px) {
   .container {
@@ -196,6 +297,16 @@ button:hover {
   button {
     margin: 5px 0;
   }
+  .reimbursement-item {
+    flex-direction: column;
+  }
+
+  .reimbursement-input-label,
+  .reimbursement-input {
+      width: 100%;  /* Full width on smaller screens */
+      margin-bottom: 5px;
+  }
+
 } 
 
 

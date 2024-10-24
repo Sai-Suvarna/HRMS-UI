@@ -2,7 +2,17 @@ import React, { useState } from 'react';
 import * as XLSX from 'xlsx';
 import { useNavigate } from 'react-router-dom';
 import './TimeSheetPage.css';
+import Box from '@mui/material/Box';
+import Stepper from '@mui/material/Stepper';
+import Step from '@mui/material/Step';
+import StepLabel from '@mui/material/StepLabel';
+import Button from '@mui/material/Button';
 import Navbar from './Navbar';
+
+const steps = [
+  'Download Excel Template',
+  'Upload Attendance Sheet',
+];
 
 // Function to convert Excel date serial number to "MMM YYYY" format (e.g., "Feb 2024")
 const convertExcelDate = (serial) => {
@@ -46,6 +56,10 @@ const isValidDays = (month, noOfDays) => {
 };
 
 const TimeSheetPage = () => {
+  const [downloadedFileName, setDownloadedFileName] = useState('');
+  const [uploadedFileName, setUploadedFileName] = useState(''); // Store the uploaded file name
+  const [activeStep, setActiveStep] = useState(0);
+  const [successMessage, setSuccessMessage] = useState('');
   const [timeSheetData, setTimeSheetData] = useState([]);
   const [errorMessages, setErrorMessages] = useState([]);
   const [showMissingOptions, setShowMissingOptions] = useState(false);
@@ -54,31 +68,55 @@ const TimeSheetPage = () => {
   const [extraEmployees, setExtraEmployees] = useState([]); // New state for extra employees
   const navigate = useNavigate(); // useNavigate for navigation
 
+  const handleNext = () => {
+    setActiveStep((prevStep) => prevStep + 1);
+  };
+  const handleBack = () => {
+    setActiveStep((prevStep) => prevStep - 1);
+  };
+  const downloadTemplate = () => {
+    // Logic to download template
+    const worksheet = XLSX.utils.json_to_sheet([]);
+    const headers = ['SNO','Emp ID', 'Name', 'Month', 'No. of Days', 'Attendance', 'LOP Days', 'OT'];
+    XLSX.utils.sheet_add_aoa(worksheet, [headers], { origin: 'A1' });
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'TimeSheet');
+    const fileName = 'attendance_template.xlsx';
+  XLSX.writeFile(workbook, fileName);
+  
+  // Set the downloaded file name state
+  setDownloadedFileName(fileName); // Call setDownloadedFileName to utilize it
+  };
+
   const handleFileUpload = (e) => {
     const file = e.target.files[0];
-    const reader = new FileReader();
+    if (file) {
+      setUploadedFileName(file.name); // Store the uploaded file name
 
-    reader.onload = (event) => {
-      const binaryStr = event.target.result;
-      const workbook = XLSX.read(binaryStr, { type: 'binary' });
-      const sheetName = workbook.SheetNames[0];
-      const sheet = workbook.Sheets[sheetName];
-      const data = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const binaryStr = event.target.result;
+        const workbook = XLSX.read(binaryStr, { type: 'binary' });
+        const sheetName = workbook.SheetNames[0];
+        const sheet = workbook.Sheets[sheetName];
+        const data = XLSX.utils.sheet_to_json(sheet, { header: 1 });
 
-      const processedData = data.slice(1).map((row) => ({
-        sno: row[0],
-        name: row[1],
-        month: convertExcelDate(row[2]),
-        noOfDays: row[3],
-        attendance: row[4],
-        lopDays: row[5],
-        empId: row[6],
-      }));
+        const processedData = data.slice(1).map((row) => ({
+          sno: row[0],
+          empId: row[1],
+          name: row[2],
+          month: convertExcelDate(row[3]),
+          noOfDays: row[4],
+          attendance: row[5],
+          lopDays: row[6],
+          OT: row[7],
+        }));
 
-      setTimeSheetData(processedData);
-    };
+        setTimeSheetData(processedData);
+      };
 
-    reader.readAsBinaryString(file);
+      reader.readAsBinaryString(file);
+    }
   };
 
   const fetchEmployeeData = async () => {
@@ -97,6 +135,14 @@ const TimeSheetPage = () => {
 
   const handleSubmit = async () => {
     setErrorMessages([]);
+    setSuccessMessage(''); // Clear any previous success message
+    // Validate file names
+    if (uploadedFileName !== downloadedFileName) {
+      console.log("upname",uploadedFileName)
+      console.log("downname",downloadedFileName)
+      alert('The uploaded file name must be the same as the downloaded file name.');
+      return; // Prevent submission
+    }
 
     const employeeData = await fetchEmployeeData();
     const companyId = localStorage.getItem('companyId');  // Fetch company ID from local storage
@@ -192,21 +238,35 @@ const TimeSheetPage = () => {
       company: companyId,  // Attach companyId to each entry
     }));
 
-    fetch('http://127.0.0.1:8000/timesheet/upload/', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(updatedTimeSheetData),
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        alert('Data uploaded successfully!');
-      })
-      .catch((error) => {
-        console.error('Error uploading data:', error);
+    // If all validations pass, submit the timesheet data
+    try {
+
+      const response = await fetch('http://127.0.0.1:8000/timesheet/upload/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updatedTimeSheetData),
       });
+      if (response.ok) {
+      setSuccessMessage('Data uploaded successfully!'); // Display success message
+    } else {
+      const data = await response.json();
+      setErrorMessages([data.message || 'Error uploading data.']); // Show server error
+    }
+    } catch (error) {
+      console.error('Error uploading data:', error);
+      setErrorMessages(['There was an error in submitting your data.']); // Display error message
+    }
   };
+  //     .then((response) => response.json())
+  //     .then((data) => {
+  //       alert('Data uploaded successfully!');
+  //     })
+  //     .catch((error) => {
+  //       console.error('Error uploading data:', error);
+  //     });
+  // };
 
   const handleYesMissing = () => {
     navigate('/employeelist'); // Navigate if the user chooses to delete missing employees
@@ -227,88 +287,146 @@ const TimeSheetPage = () => {
   return (
     <div>
      <Navbar />
-    <div className="timesheet-container">
-      <h1>Upload Time Sheet</h1>
-      <input type="file" accept=".xlsx, .xls" onChange={handleFileUpload} className="upload-button" />
-      {timeSheetData.length > 0 && (
-        <>
-          <h2>Time Sheet Data</h2>
-          <table>
-            <thead>
-              <tr>
-                <th>S.NO</th>
-                <th>Name</th>
-                <th>Month</th>
-                <th>No. of Days</th>
-                <th>Attendance</th>
-                <th>LOP Days</th>
-                <th>Emp ID</th>
-              </tr>
-            </thead>
-            <tbody>
-              {timeSheetData.map((entry, index) => (
-                <tr key={index}>
-                  <td>{entry.sno}</td>
-                  <td>{entry.name}</td>
-                  <td>{entry.month}</td>
-                  <td>{entry.noOfDays}</td>
-                  <td>{entry.attendance}</td>
-                  <td>{entry.lopDays}</td>
-                  <td>{entry.empId}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </>
-      )}
-      {errorMessages.length > 0 && (
-        <div className="error-messages">
-          <h2>Error Messages</h2>
-          <ul>
-            {errorMessages.map((message, index) => (
-              <li key={index}>{message}</li>
+      <div className="timesheet-container">
+        <Box sx={{ width: '100%' }}>
+          <Stepper activeStep={activeStep} alternativeLabel>
+            {steps.map((label, index) => (
+              <Step key={label}>
+                <StepLabel>{label}</StepLabel>
+              </Step>
             ))}
-          </ul>
-        </div>
-      )}
-      <button onClick={handleSubmit}>Submit</button>
+          </Stepper>
+        </Box>
 
-      {/* Missing Employees Options */}
-      {showMissingOptions && (
-        <div className="modal">
-          <h3>Missing Employees Found</h3>
-          <p>Do you want to remove the missing employees from the employee data?</p>
-          <button onClick={handleYesMissing}>Yes</button>
-          <button onClick={handleNoMissing}>No</button>
-          <div>
-            <h4>Missing Employees:</h4>
-            <ul>
-              {missingEmployees.map((empId, index) => (
-                <li key={index}>{empId}</li>
-              ))}
-            </ul>
+        {activeStep === 0 && (
+          <div className="step-content">
+            <h2>Step 1: Download Excel Template</h2>
+            
+            <div className="button-group">
+              <Button onClick={downloadTemplate} variant="contained">Download Template</Button>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleNext}
+                sx={{ mt: 2 }}  // Adds margin-top for spacing
+              >
+                Next
+              </Button>
+            </div>
           </div>
-        </div>
-      )}
+        )}
+        {activeStep === 1 && (
+          <div className="step-content">
+            <h2>Step 2: Upload Attendance Sheet</h2>
+            <input type="file" accept=".xlsx, .xls" onChange={handleFileUpload} className="upload-button" />
+            {timeSheetData.length > 0 && (
+              <>
+                <h2>Time Sheet Data</h2>
+                <table>
+                  <thead>
+                    <tr>
+                      <th>S.NO</th>
+                      <th>Emp ID</th>
+                      <th>Name</th>
+                      <th>Month</th>
+                      <th>No. of Days</th>
+                      <th>Attendance</th>
+                      <th>LOP Days</th>
+                      <th>OT</th>
+                      </tr>
+                </thead>
+                <tbody>
+                  {timeSheetData.map((entry, index) => (
+                    <tr key={index}>
+                      <td>{entry.sno}</td>
+                      <td>{entry.empId}</td>
+                      <td>{entry.name}</td>
+                      <td>{entry.month}</td>
+                      <td>{entry.noOfDays}</td>
+                      <td>{entry.attendance}</td>
+                      <td>{entry.lopDays}</td>
+                      <td>{entry.OT}</td>
+                    </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </>
+            )}
 
-      {/* Extra Employees Options */}
-      {showExtraOptions && (
-        <div className="modal">
-          <h3>New Employees Found</h3>
-          <p>Do you want to add the new employees to the employee data?</p>
-          <button onClick={handleYesExtra}>Yes</button>
-          <button onClick={handleNoExtra}>No</button>
-          <div>
-            <h4>New Employees:</h4>
-            <ul>
-              {extraEmployees.map((empId, index) => (
-                <li key={index}>{empId}</li>
-              ))}
-            </ul>
+            {/* Button Group for Back and Submit */}
+            <div className="button-group-two">
+              <Button onClick={handleBack} variant="contained" sx={{ mr: 2 }}>
+                Back
+              </Button>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleSubmit}
+              >
+                Submit
+              </Button>
+            </div>
+            <div>
+              {/* Error message block */}
+              {errorMessages.length > 0 && (
+                <div className="error-messages">
+                  <h2>Error Messages</h2>
+                  <ul>
+                    {errorMessages.map((message, index) => (
+                      <li key={index}>{message}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* Success message block */}
+              {successMessage && (
+                <div className="success-message">
+                  <p>{successMessage}</p>
+                </div>
+              )}
+
+              {/* Your form or other components */}
+            </div>
           </div>
-        </div>
-      )}
-    </div>
+        )}
+
+        {/* Missing Employees Options */}
+        {showMissingOptions && (
+          <div className="modal">
+            <h3>Missing Employees Found</h3>
+            <p>Do you want to remove the missing employees from the employee data?</p>
+            <button onClick={handleYesMissing}>Yes</button>
+            <button onClick={handleNoMissing}>No</button>
+            <div>
+              <h4>Missing Employees:</h4>
+              <ul>
+                {missingEmployees.map((empId, index) => (
+                  <li key={index}>{empId}</li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        )}
+
+        {/* Extra Employees Options */}
+        {showExtraOptions && (
+          <div className="modal">
+            <h3>New Employees Found</h3>
+            <p>Do you want to add the new employees to the employee data?</p>
+            <button onClick={handleYesExtra}>Yes</button>
+            <button onClick={handleNoExtra}>No</button>
+            <div>
+              <h4>New Employees:</h4>
+              <ul>
+                {extraEmployees.map((empId, index) => (
+                  <li key={index}>{empId}</li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

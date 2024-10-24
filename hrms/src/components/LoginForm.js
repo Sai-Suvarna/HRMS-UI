@@ -20,23 +20,115 @@ const LoginForm = () => {
       [e.target.name]: e.target.value,
     });
   };
+  // new roles
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault();
+  //   try {
+  //     const response = await axios.post('http://localhost:8000/api/login/', formData);  
+  //     if (response.data.access) {
+  //       localStorage.setItem('access', response.data.access);
+  //       localStorage.setItem('refresh', response.data.refresh);
+  //       setSuccess(true);
+  //       setError('');
+  //       setTimeout(() => navigate('/companysetup'), 1000);  
+  //     }
+  //   } catch (err) {
+  //     setError('Invalid credentials');
+  //     setSuccess(false);
+  //   }
+  // };
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault();
+  //   try {
+  //       const response = await axios.post('http://localhost:8000/api/login/', formData);
+  //       if (response.data.access) {
+  //           localStorage.setItem('access', response.data.access);
+  //           localStorage.setItem('refresh', response.data.refresh);
+  //           localStorage.setItem('userId', response.data.user_id);  // Store the user ID
+  //           setSuccess(true);
+  //           setError('');
 
+  //           if (!response.data.is_company_setup_complete) {
+  //               navigate('/companysetup');  // Redirect to company setup if not complete
+  //           } else if (!response.data.is_payroll_setup_complete) {
+  //               navigate('/payrolesetup');  // Redirect to payroll setup if company setup is done but payroll isn't
+  //           } else {
+  //               navigate('/employeelist');  // If both are done, go to employee list
+  //           }
+  //       }
+  //   } catch (err) {
+  //       setError('Invalid credentials');
+  //       setSuccess(false);
+  //   }
+  // };
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault();
+  //   try {
+  //     const response = await axios.post('http://localhost:8000/api/login/', formData);  // API call to login
+
+  //     if (response.data.access) {
+  //       localStorage.setItem('access', response.data.access);
+  //       localStorage.setItem('refresh', response.data.refresh);
+  //       localStorage.setItem('userId', response.data.user_id);  // Store the user ID
+
+  //       // Debugging to ensure values are coming correctly
+  //       console.log("Company Setup Complete:", response.data.is_company_setup_complete);
+  //       console.log("Payroll Setup Complete:", response.data.is_payroll_setup_complete);
+
+  //       setSuccess(true);
+  //       setError('');
+
+  //       // Check redirection based on backend flags
+  //       if (!response.data.is_company_setup_complete) {
+  //         navigate('/companysetup');  // If company setup is incomplete, redirect to setup
+  //       } else if (!response.data.is_payroll_setup_complete) {
+  //         navigate('/payrolesetup');  // If payroll setup is incomplete, redirect to payroll setup
+  //       } else {
+  //         navigate('/Home');  // If both are complete, go to employee list
+  //       }
+  //     }
+  //   } catch (err) {
+  //     setError('Invalid credentials');
+  //     setSuccess(false);
+  //   }
+  // };
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post('http://localhost:8000/api/login/', formData);  
-      if (response.data.access) {
-        localStorage.setItem('access', response.data.access);
-        localStorage.setItem('refresh', response.data.refresh);
-        setSuccess(true);
-        setError('');
-        setTimeout(() => navigate('/companysetup'), 1000);  
-      }
+        const response = await axios.post('http://localhost:8000/api/login/', formData);  // API call to login
+
+        if (response.data.access) {
+            // Clear any old session data from previous users
+            localStorage.clear();
+
+            // Store new session data for the logged-in user
+            localStorage.setItem('access', response.data.access);
+            localStorage.setItem('refresh', response.data.refresh);
+            localStorage.setItem('userId', response.data.user_id);  // Store the user ID
+            
+            // Check if the user has a company ID (existing user)
+            if (response.data.company_id) {
+                localStorage.setItem('companyId', response.data.company_id);  // Store the company ID for existing users
+            }
+
+            setSuccess(true);
+            setError('');
+
+            // Redirection logic based on backend flags
+            if (!response.data.is_company_setup_complete) {
+                navigate('/companysetup');  // If company setup is incomplete, redirect to setup
+            } else if (!response.data.is_payroll_setup_complete) {
+                navigate('/payrolesetup');  // If payroll setup is incomplete, redirect to payroll setup
+            } else {
+                navigate('/Home');  // If both are complete, go to employee list
+            }
+        }
     } catch (err) {
-      setError('Invalid credentials');
-      setSuccess(false);
+        setError('Invalid credentials');
+        setSuccess(false);
     }
-  };
+};
+
 
   return (
     <div>

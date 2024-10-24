@@ -1,0 +1,29 @@
+
+
+/* Container for the table to allow horizontal scrolling */
+.validation-table-container {
+    width: 100%;
+    overflow-x: auto;  /* Enables horizontal scrolling */
+}
+
+/* Style for the table */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 1200px; /* Ensure the table takes up a minimum width for scrolling */
+}
+
+/* Table cell and header styling */
+th, td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+
+th {
+    background-color: #f2f2f2;
+}
+
+tr:nth-child(even) {
+    background-color: #f9f9f9;
+}

@@ -1,12 +1,14 @@
+/* time sheet page.css */
+
 .timesheet-container {
     padding: 20px;
   }
   
   body {
-    margin: 0; /* Remove default margin */
-    padding: 0; /* Remove default padding */
-    overflow-y: auto; /* Enables vertical scrolling */
-    height: 100vh; /* Full viewport height */
+    margin: 0; 
+    padding: 0; 
+    overflow-y: auto; 
+    height: 100vh; 
   }
 
   h1{
@@ -42,4 +44,37 @@
     background-color: #45a049;
   }
   
+  .step-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center; 
+    justify-content: center; 
+    text-align: center; 
+  }
+  
+  .button-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center; 
 
+
+  }
+
+  /* .button {
+    margin: 0 20px;               
+    padding: 10px;                
+    font-size: 16px;              
+    width: 100px;                 
+    transition: background-color 0.3s ease; 
+}
+     */
+
+  .button-group-two {
+    justify-content: safe;
+    /* display: flex;                  */
+    flex-direction: column-reverse;       
+    margin-top: 20px;    
+    /* align-items: center;  */
+
+         
+}
