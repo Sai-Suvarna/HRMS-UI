@@ -63,8 +63,8 @@ const EmployeeSetupGrid = () => {
           Table View
         </button>
 
-        <div className="table-container">
-          <table className="employee-table">
+        <div className="table-gridcontainer">
+          <table className="employee-gridtable">
             <thead>
               {/* Main Headers */}
               <tr>
