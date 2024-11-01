@@ -132,7 +132,7 @@ const LoginForm = () => {
 
   return (
     <div>
-      <Navbar />  
+      {/* <Navbar />   */}
       <div className="login-container">
         <div className="login-form-container">
           <h2>Welcome back 👋</h2>

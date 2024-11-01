@@ -9,10 +9,13 @@ import EmployeeSetup from './components/EmployeeSetup';
 import PayroleSetup from './components/PayroleSetup';
 import EmployeeList from './components/EmployeeList';
 import TimeSheetPage from './components/TimeSheetPage';
-import payslipvalidation from './components/payslipvalidation';
+import PaySlipValidation from './components/PaySlipValidation';
 import EmployeeSetupGrid from './components/EmployeeSetupGrid';
 import PayroleSet from './components/PayroleSet';
 
+import Logout from './components/Logout';
+import CompanyDetails from './components/CompanyDetails';
+import UpdateCompanyDetails from './components/UpdateCompanyDetails';
 
 import './App.css';
 
@@ -21,7 +24,9 @@ function App() {
     <Router>
       <div className="App">
         <Routes>
-          <Route path="/" element={<HomePage />} />   {/* Home page route */}
+          {/* <Route path="/" element={<HomePage />} />   */}
+          <Route path="/" element={<LoginForm />} />   
+ 
           <Route path="/login" element={<LoginForm />} />
           <Route path="/register" element={<RegisterForm />} />
           <Route path="/home" element={<Home/>} />
@@ -33,6 +38,11 @@ function App() {
           <Route path="/Attendance" element={<TimeSheetPage />} />
           <Route path="/payslipvalidation" element={<payslipvalidation />} />
           <Route path="/payroleset" element={<PayroleSet/>} />
+          <Route path="/payslipvalidation" element={<PaySlipValidation />} />
+          <Route path="/logout" element={<Logout />} />
+          <Route path="/companydetails" element={<CompanyDetails />} /> {/* Add route */}
+          <Route path="/updatecompanydetails" element={<UpdateCompanyDetails />} /> {/* Add this route */}
+
         </Routes>
       </div>
     </Router>

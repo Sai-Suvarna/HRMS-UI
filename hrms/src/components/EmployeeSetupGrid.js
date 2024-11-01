@@ -71,8 +71,10 @@ const EmployeeSetupGrid = () => {
                 <th rowSpan="2">Emp ID</th>
                 <th colSpan="17">Work Details</th>
                 <th colSpan="6">Social Security</th>
-                <th colSpan="14">Personal Details</th>
+                <th colSpan="15">Personal Details</th>
                 <th colSpan="10">Insurance Details</th>
+                <th colSpan="6">Salary Details</th>
+
               </tr>
 
               {/* Sub-columns */}
@@ -120,6 +122,7 @@ const EmployeeSetupGrid = () => {
                 <th>Relationship Name</th>
                 <th>Blood Group</th>
                 <th>Shirt Size</th>
+                <th>Location</th>
 
                 {/* Insurance Details */}
                 <th>Father's Name</th>
@@ -132,6 +135,17 @@ const EmployeeSetupGrid = () => {
                 <th>Child1 DOB</th>
                 <th>Child2 Name</th>
                 <th>Child2 DOB</th>
+
+                {/* Salary Details */}
+                <th>CTC</th>
+                <th>Basic Pay</th>
+                <th>Dearness Allowance</th>
+                <th>HRA</th>
+                <th>Special Allowance</th>
+                <th>Deductions & Loans</th>
+
+                
+
               </tr>
             </thead>
             <tbody>
@@ -182,6 +196,8 @@ const EmployeeSetupGrid = () => {
                   <td> {employee.personal_details.relationshipName} </td>
                   <td> {employee.personal_details.bloodGroup}</td>
                   <td> {employee.personal_details.shirtSize}</td>
+                  <td> {employee.personal_details.location}</td>
+
 
                   {/* Insurance Details */}
                   <td>{employee.insurance_details.fathersName}</td>
@@ -194,6 +210,14 @@ const EmployeeSetupGrid = () => {
                   <td>{employee.insurance_details.child1DOB}</td>
                   <td>{employee.insurance_details.child2}</td>
                   <td>{employee.insurance_details.child2DOB}</td>
+
+                  {/* Salary Details*/}
+                  <td>{employee.salary_details.CTCpayAMT}</td>
+                  <td>{employee.salary_details.BasicpayAMT}</td>
+                  <td>{employee.salary_details.DApayAMT}</td>
+                  <td>{employee.salary_details.HRApayAMT}</td>
+                  <td>{employee.salary_details.SAllowancesAMT}</td>
+                  <td>{employee.salary_details.DLoansAMT}</td> 
 
                 </tr>
 

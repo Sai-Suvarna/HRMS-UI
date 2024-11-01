@@ -11,6 +11,8 @@ body {
   align-items: center;
   min-height: 100vh; /* Full viewport height */
   background-color: #ede7e7; 
+  /* background-color: #f7f9fc;  */
+
 }
 
 /* .login-form-container {
@@ -29,6 +31,7 @@ body {
   padding: 2rem;
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  text-align: center; 
   max-width: 400px;
   width: 100%;
 }
@@ -41,6 +44,8 @@ h2 {
 
 .login-form-group {
   margin-bottom: 1rem;
+  text-align: left;
+
 }
 
 .login-form-group label {
@@ -61,13 +66,15 @@ h2 {
 
 .login-btn {
   width: 100%;
-  padding: 0.75rem;
   border: none;
   border-radius: 4px;
   background-color: #007bff;
   color: #fff;
   font-size: 16px;
   cursor: pointer;
+  margin-top: 1rem;
+  margin-left: 0px
+
 }
 
 .login-btn:hover {

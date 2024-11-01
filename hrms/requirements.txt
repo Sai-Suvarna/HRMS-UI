@@ -4,3 +4,4 @@ date-fns
 
 antd 
 moment
+react-icons

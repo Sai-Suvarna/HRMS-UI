@@ -76,6 +76,7 @@ useEffect(() => {
                 <th>Social Security</th>
                 <th>Personal Details</th>
                 <th>Insurance Details</th>
+                <th>Salary Details</th>
               </tr>
             </thead>
             <tbody>
@@ -129,6 +130,8 @@ useEffect(() => {
                     <div>Relationship Name: {employee.personal_details.relationshipName}</div>
                     <div>Blood Group: {employee.personal_details.bloodGroup}</div>
                     <div>Shirt Size: {employee.personal_details.shirtSize}</div>
+                    <div>Location: {employee.personal_details.location}</div>
+
 
                   </td>
                   <td>
@@ -142,6 +145,18 @@ useEffect(() => {
                     <div>Child1 DOB: {employee.insurance_details.child1DOB}</div>
                     <div>Child2 Name: {employee.insurance_details.child2}</div>
                     <div>Child2 DOB: {employee.insurance_details.child2DOB}</div>
+
+                  </td>
+
+                  <td>
+                    <div>CTC: {employee.salary_details.CTCpayAMT}</div>
+                    <div>Basic Pay: {employee.salary_details.BasicpayAMT}</div>
+                    <div>Dearness Allowance: {employee.salary_details.DApayAMT}</div>
+                    <div>HRA: {employee.salary_details.HRApayAMT}</div>
+                    <div>Special Allowance: {employee.salary_details.SAllowancesAMT}</div>
+                    <div>Deductions & Loans: {employee.salary_details.DLoansAMT}</div>
+
+                   
 
                   </td>
                 </tr>

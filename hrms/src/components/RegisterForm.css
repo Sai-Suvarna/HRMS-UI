@@ -9,19 +9,19 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 80vh; 
+  min-height: 30%; 
   margin-top: 3%;
   background-color: #ede7e7; 
 }
 
 .register-form-container {
   background: #fff;
-  padding: 2rem;
+  /* padding: 2rem; */
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   max-width: 600px;
-  width: 100%;
-  height: 70%;
+  width: 40%;
+  height: 40%;
   box-sizing: border-box; 
   overflow: hidden; 
 }
@@ -39,22 +39,22 @@ h2 {
 .register-form-group label {
   flex-wrap: wrap;
   display: block;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.1rem;
   font-weight: 500;
   color: #555;
 }
 
 .register-form-group input {
-  width: 100%;
+  width: 60%;
   flex-wrap: wrap;
-  padding: 0.75rem;
+  padding: 0.40rem;
   border: 1px solid #ddd;
   border-radius: 4px;
   box-sizing: border-box; 
 }
 
 .register-btn {
-  width: 100%;
+  width: 20%;
   padding: 0.75rem;
   border: none;
   border-radius: 4px;
@@ -62,6 +62,9 @@ h2 {
   color: #fff;
   font-size: 16px;
   cursor: pointer;
+  /* margin-top: 1rem; */
+  /* margin-left: 0px */
+
 }
 
 .register-btn:hover {
@@ -89,4 +92,21 @@ h2 {
 
 .login-link a:hover {
   text-decoration: underline;
+}
+
+.password-criteria {
+  list-style-type: none;
+  padding: 0;
+  margin-top: 0.5rem;
+  text-align: center;
+}
+
+.password-criteria li {
+  font-size: 14px;
+  color: red; 
+}
+
+.password-criteria li.met {
+  color: green; 
+  font-weight: bold;
 }

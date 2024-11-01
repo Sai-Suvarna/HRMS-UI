@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect} from 'react';
 import * as XLSX from 'xlsx';
 import { useNavigate } from 'react-router-dom';
 import './TimeSheetPage.css';
@@ -438,58 +438,231 @@ const TimeSheetPage = () => {
   }, [timesheets, employeeData, payrollSettings]);
   
 
+  useEffect(() => { 
+    fetchEmployeeData();
+  }, []);
+
+
+  // working handle submit
+  // const handleSubmit = async () => {
+  //   setErrorMessages([]);
+  //   setSuccessMessage(''); 
+  //   if (uploadedFileName !== downloadedFileName) {
+  //     console.log("upname",uploadedFileName)
+  //     console.log("downname",downloadedFileName)
+  //     alert('The uploaded file name must be the same as the downloaded file name.');
+  //     return; 
+  //   }
+
+  //   const employeeData = await fetchEmployeeData();
+  //   const companyId = localStorage.getItem('companyId');  // Fetch company ID from local storage
+  //   if (!Array.isArray(employeeData)) {
+  //     console.error('Expected employeeData to be an array but got:', employeeData);
+  //     return;
+  //   }
+
+  //   const employeeSet = new Set(employeeData.map((emp) => emp.empId));
+  //   const timesheetEmployeeSet = new Set(timeSheetData.map((entry) => String(entry.empId)));
+
+  //   console.log('Employee Set:', employeeSet);
+  //   console.log('Timesheet Employee Set:', timesheetEmployeeSet);
+  
+  //   const missingEmployees = [...employeeSet].filter((empId) => !timesheetEmployeeSet.has(empId));
+  //   console.log('Missing Employees:', missingEmployees);
+
+  //   const extraEmployees = [...timesheetEmployeeSet].filter((empId) => !employeeSet.has(empId));
+  //   console.log('Extra Employees:', extraEmployees);
+
+  //   if (missingEmployees.length > 0 || extraEmployees.length > 0) {
+  //     if (missingEmployees.length > 0) {
+  //       setMissingEmployees(missingEmployees); 
+  //       setShowMissingOptions(true); 
+  //     }
+
+  //     if (extraEmployees.length > 0) {
+  //       setExtraEmployees(extraEmployees); 
+  //       setShowExtraOptions(true); 
+  //     }
+
+  //     return; 
+  //   }
+
+  //   const invalidEntries = timeSheetData.map((entry) => {
+  //     const monthName = entry.month.split(' ')[0];
+  //     const fullMonthName = new Date(`${monthName} 1`).toLocaleString('default', { month: 'long' });
+  //     const daysWorked = Number(entry.noOfDays);
+  //     const attendance = Number(entry.attendance);
+  //     const lopDays = Number(entry.lopDays);
+  //     const isDaysValid = isValidDays(fullMonthName, daysWorked);
+  //     const isAttendanceValid = attendance <= daysWorked;
+  //     const isAttendanceLopValid = attendance + lopDays === daysWorked;
+  //     const isEmpIdValid = employeeSet.has(String(entry.empId));
+
+  //     return {
+  //       entry,
+  //       isDaysValid,
+  //       isAttendanceValid,
+  //       isAttendanceLopValid,
+  //       isEmpIdValid,
+  //     };
+  //   }).filter((validation) => !validation.isDaysValid || !validation.isAttendanceValid || !validation.isAttendanceLopValid || !validation.isEmpIdValid);
+
+  //   if (invalidEntries.length > 0) {
+  //     const messages = invalidEntries.map(({ entry, isDaysValid, isAttendanceValid, isAttendanceLopValid, isEmpIdValid }) => {
+  //       let message = `${entry.name}: `;
+  //       const monthName = entry.month.split(' ')[0];
+  //       const fullMonthName = new Date(`${monthName} 1`).toLocaleString('default', { month: 'long' });
+  //       const daysWorked = Number(entry.noOfDays);
+  //       const attendance = Number(entry.attendance);
+  //       const lopDays = Number(entry.lopDays);
+
+  //       if (!isDaysValid) {
+  //         message += `${daysWorked} is not a valid number of days in ${fullMonthName}. `;
+  //       }
+  //       if (!isAttendanceValid) {
+  //         message += `Attendance (${attendance}) exceeds the number of days (${daysWorked}). `;
+  //       }
+  //       if (!isAttendanceLopValid) {
+  //         message += `Attendance (${attendance}) + LOP Days (${lopDays}) should equal the number of days (${daysWorked}). `;
+  //       }
+  //       if (!isEmpIdValid) {
+  //         message += `EmpId (${entry.empId}) for ${entry.name} is not valid. `;
+  //       }
+
+  //       return message;
+  //     });
+
+  //     setErrorMessages(messages);
+  //     return;
+  //   }
+
+  //   const updatedTimeSheetData = timeSheetData.map((entry) => ({
+  //     ...entry,
+  //     company: companyId,  
+  //   }));
+
+  //   // If all validations pass, submit the timesheet data
+  //   try {
+
+  //     const response = await fetch('http://127.0.0.1:8000/timesheet/upload/', {
+  //       method: 'POST',
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //       },
+  //       body: JSON.stringify(updatedTimeSheetData),
+  //     });
+  //     if (response.ok) {
+  //     setSuccessMessage('Data uploaded successfully!'); // Display success message
+  //   } else {
+  //     const data = await response.json();
+  //     setErrorMessages([data.message || 'Error uploading data.']); // Show server error
+  //   }
+  //   } catch (error) {
+  //     console.error('Error uploading data:', error);
+  //     setErrorMessages(['There was an error in submitting your data.']); // Display error message
+  //   }
+  // };
+  // working handle submit
+
   const handleSubmit = async () => {
     setErrorMessages([]);
-    setSuccessMessage(''); // Clear any previous success message
-  
+    // setSuccessMessage(''); 
     // Fetch employee data from the new API structure
-    const companyId = localStorage.getItem('companyId');  
-    const employeeData = await fetchEmployeeData(); 
+    // const companyId = localStorage.getItem('companyId');  
+    // const employeeData = await fetchEmployeeData(); 
   
+    setSuccessMessage(''); 
+    if (uploadedFileName !== downloadedFileName) {
+      console.log("upname",uploadedFileName)
+      console.log("downname",downloadedFileName)
+      alert('The uploaded file name must be the same as the downloaded file name.');
+      return; 
+    }
+
+    const employeeData = await fetchEmployeeData();
+    const companyId = localStorage.getItem('companyId');  // Fetch company ID from local storage
     if (!Array.isArray(employeeData)) {
       console.error('Expected employeeData to be an array but got:', employeeData);
       return;
     }
   
     // Extract employee IDs from the new response structure
-    const employeeSet = new Set(employeeData.map(emp => String(emp.empId)));
-    const timesheetEmployeeSet = new Set(timeSheetData.map(entry => String(entry.empId)));
+    // const employeeSet = new Set(employeeData.map(emp => String(emp.empId)));
+    // const timesheetEmployeeSet = new Set(timeSheetData.map(entry => String(entry.empId)));
   
+    // console.log('Employee Set:', employeeSet);
+    // console.log('Timesheet Employee Set:', timesheetEmployeeSet);
+  
+    // Check for missing employees (present in employeeSet but not in timesheetEmployeeSet)
+    // const missingEmployees = [...employeeSet].filter(empId => !timesheetEmployeeSet.has(empId));
+    // console.log('Missing Employees:', missingEmployees);
+  
+    // Check for extra employees (present in timesheetEmployeeSet but not in employeeSet)
+    // const extraEmployees = [...timesheetEmployeeSet].filter(empId => !employeeSet.has(empId));
+    // console.log('Extra Employees:', extraEmployees);
+
+
+    // If there are missing employees or extra employees, show the respective messages
+  
+    // If there are missing employees or extra employees, show the respective messages
+    // if (missingEmployees.length > 0 || extraEmployees.length > 0) {
+    //   if (missingEmployees.length > 0) {
+    //     setMissingEmployees(missingEmployees);
+    //     setShowMissingOptions(true); // Show Yes/No options for missing employees
+    //   }
+
+
+      // Handle extra employees message
+  
+      // Handle extra employees message
+    //   if (extraEmployees.length > 0) {
+    //     setExtraEmployees(extraEmployees);
+    //     setShowExtraOptions(true); // Show Yes/No options for extra employees
+    //   }
+  
+    //   return; // Stop submission if there are discrepancies
+    // }
+  
+    // Validate each timesheet entry
+    // const invalidEntries = timeSheetData.map(entry => {
+
+    const employeeMap = new Map(
+      employeeData.map((emp) => [
+        emp.empId, 
+        `${emp.firstName} ${emp.lastName}`.trim()
+      ])
+    );
+
+    const timesheetEmployeeIds = timeSheetData.map((entry) => String(entry.empId));
+    console.log('timesheetEmployeeIds:',timesheetEmployeeIds)
+
+    const employeeSet = new Set(employeeData.map((emp) => emp.empId));
+    const timesheetEmployeeSet = new Set(timeSheetData.map((entry) => String(entry.empId)));
+
     console.log('Employee Set:', employeeSet);
     console.log('Timesheet Employee Set:', timesheetEmployeeSet);
   
-    // Check for missing employees (present in employeeSet but not in timesheetEmployeeSet)
-    const missingEmployees = [...employeeSet].filter(empId => !timesheetEmployeeSet.has(empId));
+    const missingEmployees = [...employeeSet].filter((empId) => !timesheetEmployeeSet.has(empId));
     console.log('Missing Employees:', missingEmployees);
-  
-    // Check for extra employees (present in timesheetEmployeeSet but not in employeeSet)
-    const extraEmployees = [...timesheetEmployeeSet].filter(empId => !employeeSet.has(empId));
+
+    const extraEmployees = [...timesheetEmployeeSet].filter((empId) => !employeeSet.has(empId));
     console.log('Extra Employees:', extraEmployees);
 
-
-    // If there are missing employees or extra employees, show the respective messages
-  
-    // If there are missing employees or extra employees, show the respective messages
     if (missingEmployees.length > 0 || extraEmployees.length > 0) {
       if (missingEmployees.length > 0) {
-        setMissingEmployees(missingEmployees);
-        setShowMissingOptions(true); // Show Yes/No options for missing employees
+        setMissingEmployees(missingEmployees); 
+        setShowMissingOptions(true); 
       }
 
-
-      // Handle extra employees message
-  
-      // Handle extra employees message
       if (extraEmployees.length > 0) {
-        setExtraEmployees(extraEmployees);
-        setShowExtraOptions(true); // Show Yes/No options for extra employees
+        setExtraEmployees(extraEmployees); 
+        setShowExtraOptions(true); 
       }
-  
-      return; // Stop submission if there are discrepancies
+
+      return; 
     }
-  
-    // Validate each timesheet entry
-    const invalidEntries = timeSheetData.map(entry => {
+
+    const invalidEntries = timeSheetData.map((entry) => {
       const monthName = entry.month.split(' ')[0];
       const fullMonthName = new Date(`${monthName} 1`).toLocaleString('default', { month: 'long' });
       const daysWorked = Number(entry.noOfDays);
@@ -501,22 +674,29 @@ const TimeSheetPage = () => {
       const isAttendanceLopValid = attendance + lopDays === daysWorked;
       const isEmpIdValid = employeeSet.has(String(entry.empId));
   
+      const isEmpNameValid = employeeMap.get(String(entry.empId)) === entry.name;
+
       return {
         entry,
         isDaysValid,
         isAttendanceValid,
         isAttendanceLopValid,
         isEmpIdValid,
+        isEmpNameValid,
+
       };
-    }).filter(validation => 
-      !validation.isDaysValid || 
-      !validation.isAttendanceValid || 
-      !validation.isAttendanceLopValid || 
-      !validation.isEmpIdValid
-    );
+    // }).filter(validation => 
+    //   !validation.isDaysValid || 
+    //   !validation.isAttendanceValid || 
+    //   !validation.isAttendanceLopValid || 
+    //   !validation.isEmpIdValid
+    // );
   
+    }).filter((validation) => !validation.isDaysValid || !validation.isAttendanceValid || !validation.isAttendanceLopValid || !validation.isEmpIdValid|| 
+    !validation.isEmpNameValid);
+
     if (invalidEntries.length > 0) {
-      const messages = invalidEntries.map(({ entry, isDaysValid, isAttendanceValid, isAttendanceLopValid, isEmpIdValid }) => {
+      const messages = invalidEntries.map(({ entry, isDaysValid, isAttendanceValid, isAttendanceLopValid, isEmpIdValid, isEmpNameValid}) => {
         let message = `${entry.name}: `;
         const monthName = entry.month.split(' ')[0];
         const fullMonthName = new Date(`${monthName} 1`).toLocaleString('default', { month: 'long' });
@@ -537,6 +717,10 @@ const TimeSheetPage = () => {
           message += `EmpId (${entry.empId}) for ${entry.name} is not valid. `;
         }
   
+        if (!isEmpNameValid) {
+          message += `EmpName mismatch for empId ${entry.empId}: expected '${employeeMap.get(String(entry.empId))}', got '${entry.name}'. `;
+        }
+
         return message;
       });
   
@@ -549,6 +733,10 @@ const TimeSheetPage = () => {
       ...entry,
       month: formatMonthToMMYYYY(entry.month),
       company: companyId, // Attach companyId to each entry
+
+    // const updatedTimeSheetData = timeSheetData.map((entry) => ({
+    //   ...entry,
+    //   company: companyId,  
     }));
 
 
@@ -579,6 +767,16 @@ const TimeSheetPage = () => {
   
 
 
+
+  //     .then((response) => response.json())
+  //     .then((data) => {
+  //       alert('Data uploaded successfully!');
+  //     })
+  //     .catch((error) => {
+  //       console.error('Error uploading data:', error);
+  //     });
+  // };
+
   const handleYesMissing = () => {
     navigate('/employeelist'); // Navigate if the user chooses to delete missing employees
   };
@@ -592,7 +790,7 @@ const TimeSheetPage = () => {
   };
 
   const handleNoExtra = () => {
-    setShowExtraOptions(false); // Hide the Yes/No options for extra employees
+    setShowExtraOptions(false); 
   };
 
   // const savePayData = async () => {
@@ -653,7 +851,7 @@ const TimeSheetPage = () => {
                 variant="contained"
                 color="primary"
                 onClick={handleNext}
-                sx={{ mt: 2 }}  // Adds margin-top for spacing
+                sx={{ mt: 2 }}  
               >
                 Next
               </Button>
@@ -724,11 +922,10 @@ const TimeSheetPage = () => {
                 Next
               </Button>
             </div>
-            <div>
-              {/* Error message block */}
+
+            {/* <div>
               {errorMessages.length > 0 && (
                 <div className="error-messages">
-                  <h2>Error Messages</h2>
                   <ul>
                     {errorMessages.map((message, index) => (
                       <li key={index}>{message}</li>
@@ -737,15 +934,34 @@ const TimeSheetPage = () => {
                 </div>
               )}
 
-              {/* Success message block */}
               {successMessage && (
                 <div className="success-message">
                   <p>{successMessage}</p>
                 </div>
               )}
 
-              {/* Your form or other components */}
-            </div>
+            </div> */}
+<div>
+  {/* Error message block */}
+  {errorMessages.length > 0 && (
+    <div className="error-messages" style={{ color: 'red' }}>
+      {errorMessages.map((message, index) => (
+        <p key={index}>{message}</p>
+      ))}
+    </div>
+  )}
+
+  {/* Success message block */}
+  {successMessage && (
+    <div className="success-message" style={{ color: 'green' }}>
+      <p>{successMessage}</p>
+    </div>
+  )}
+
+  {/* Your form or other components */}
+</div>
+
+           
           </div>
         )}
 

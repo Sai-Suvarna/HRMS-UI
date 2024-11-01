@@ -1,0 +1,67 @@
+.companydetails-container {
+  padding: 20px;
+  max-width: 800px;
+  margin: 0 auto;
+  background-color: white; /* Set background color to white */
+  border: 1px solid #ccc;  /* Light grey border */
+  border-radius: 8px;      /* Rounded corners */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Shadow for depth */
+  /* position: relative;        */
+  margin-top: 1%;
+  }
+  
+  .company-details-container {
+    margin-top: 20px; /* Adjust spacing as needed */
+    display: flex;
+    flex-direction: column; /* Stack fields vertically */
+    /* position: relative; */
+  }
+  
+  .edit-icon {
+    /* position: absolute; */
+    /* top: 0px;
+    right: 10px; */
+    margin-left: 10px; /* Space between the heading and icon */
+    cursor: pointer;
+    color: #060707; /* Change color as needed */
+    font-size: 18px; /* Adjust size as needed */
+  }
+  
+  .edit-icon:hover {
+    color: #000203; /* Darker color on hover */
+  }
+  
+  .field-container {
+    display: flex; /* Use flex for horizontal alignment */
+    /* justify-content: space-between;  */
+    padding: 7px 0px; /* Add vertical spacing between fields */
+  }
+  
+  .field-label {
+    font-weight: bold; /* Make labels bold */
+    width: 200px; /* Fixed width for labels */
+    text-align: left;
+    padding-right: 3%;
+    padding-left: 2%;
+
+  }
+  
+  .field-value {
+    flex: 1; /* Allow values to take the remaining space */
+    text-align: left; /* Align text to the right */
+    /* padding-left: 3%;   */
+  }
+
+  .input-field {
+    width: 500px; /* Change to your desired width */
+    padding: 4px;
+    box-sizing: border-box; 
+  }
+
+  .file-input {
+    width: 100x; /* Change to your desired width */
+    padding: 4px;
+    box-sizing: border-box; 
+    background: #000;
+  }
+  

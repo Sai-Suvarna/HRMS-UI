@@ -252,8 +252,7 @@ const PayroleSetup = () => {
 
     // Store data in localStorage
     localStorage.setItem('payrollData', JSON.stringify(dataToStore));
-    console.log('Data stored in localStorage:', dataToStore);
-    
+    console.log('Data stored in localStorage:', dataToStore);  
 
     try {
       const response = await axios.post('http://localhost:8000/api/payroledetails/', {
@@ -273,11 +272,6 @@ const PayroleSetup = () => {
       setIsSubmitting(false); // Enable the button again
     }
   };
-  
-
-  
-  
-
 
   return (
     <div>
@@ -343,7 +337,7 @@ const PayroleSetup = () => {
   
             <div className="form-group">
               <label>HRA Percentage:</label>
-              <input
+              <input id='HRAP'
                 type="number"
                 name="hra_percentage"
                 value={formData.hra_percentage}
