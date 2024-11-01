@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import * as XLSX from 'xlsx';
 import { useNavigate } from 'react-router-dom';
 import './TimeSheetPage.css';
@@ -8,11 +8,20 @@ import Step from '@mui/material/Step';
 import StepLabel from '@mui/material/StepLabel';
 import Button from '@mui/material/Button';
 import Navbar from './Navbar';
+import axios from 'axios';
 
 const steps = [
   'Download Excel Template',
   'Upload Attendance Sheet',
+  'Review and Calculate Pay',
 ];
+
+const formatMonthToMMYYYY = (month) => {
+  const [shortMonth, year] = month.split(' ');
+  const date = new Date(`${shortMonth} 1, ${year}`);
+  const monthNum = String(date.getMonth() + 1).padStart(2, '0'); // Ensure 2-digit month
+  return `${monthNum}-${year}`;
+};
 
 // Function to convert Excel date serial number to "MMM YYYY" format (e.g., "Feb 2024")
 const convertExcelDate = (serial) => {
@@ -21,7 +30,7 @@ const convertExcelDate = (serial) => {
   return excelDate.toLocaleDateString('en-US', options);
 };
 
-// Function to validate no_of_days based on the month
+// Function to validate noOfDays based on the month
 const isValidDays = (month, noOfDays) => {
   const monthDays = {
     January: 31,
@@ -67,6 +76,13 @@ const TimeSheetPage = () => {
   const [showExtraOptions, setShowExtraOptions] = useState(false); // New state for extra employees
   const [extraEmployees, setExtraEmployees] = useState([]); // New state for extra employees
   const navigate = useNavigate(); // useNavigate for navigation
+  // const [timesheets, setTimesheets] = useState([]);
+  // const [loading, setLoading] = useState(true); // State for loading indicator
+  // const [error, setError] = useState(null);
+  const [timesheets, setTimesheets] = useState([]);
+  const [employeeData, setEmployeeData] = useState([]);
+  const [calculatedData, setCalculatedData] = useState([]);
+  const [payrollSettings, setPayrollSettings] = useState(null);
 
   const handleNext = () => {
     setActiveStep((prevStep) => prevStep + 1);
@@ -77,7 +93,7 @@ const TimeSheetPage = () => {
   const downloadTemplate = () => {
     // Logic to download template
     const worksheet = XLSX.utils.json_to_sheet([]);
-    const headers = ['SNO','Emp ID', 'Name', 'Month', 'No. of Days', 'Attendance', 'LOP Days', 'OT'];
+    const headers = ['SNO','Emp ID', 'Name', 'Month', 'No. of Days', 'Attendance', 'LOP Days', 'OT', 'Allowance', 'Deductions'];
     XLSX.utils.sheet_add_aoa(worksheet, [headers], { origin: 'A1' });
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, 'TimeSheet');
@@ -110,6 +126,8 @@ const TimeSheetPage = () => {
           attendance: row[5],
           lopDays: row[6],
           OT: row[7],
+          allowance: row[8],
+          deductions: row[9],
         }));
 
         setTimeSheetData(processedData);
@@ -119,81 +137,370 @@ const TimeSheetPage = () => {
     }
   };
 
-  const fetchEmployeeData = async () => {
-    try {
-      const companyId = localStorage.getItem('companyId');
-      const response = await fetch(`http://localhost:8000/api/employee/work-details/?company_id=${companyId}`);
-      const data = await response.json();
-      console.log('Fetched employee data:', data); // Log the fetched data
 
-      return Array.isArray(data.work_details) ? data.work_details : []; 
+  // Fetch attendance data (Timesheets)
+  
+  const fetchTimesheets = async () => {
+    const companyId = localStorage.getItem('companyId');
+    console.log('Fetching timesheets for company ID:', companyId);
+
+    try {
+      const response = await axios.get(
+        `http://127.0.0.1:8000/timesheet-view/${companyId}/`
+      );
+      console.log('Fetched Timesheets:', response.data.Attendance_data);
+      setTimesheets(response.data.Attendance_data);
+    } catch (error) {
+      console.error('Error fetching timesheets:', error);
+    }
+  };  
+
+  
+    const fetchCompensationSettings = async () => {
+      try {
+        const companyId = localStorage.getItem('companyId');
+        if (!companyId) {
+          console.error('Company ID not found');
+          return;
+        }
+
+        const response = await axios.get(`http://localhost:8000/payroll-settings/${companyId}/`);
+        console.log('Fetched Payroll Settings:', response.data); // Debug: Check if data is fetched
+        setPayrollSettings(response.data); // Store the fetched settings
+      } catch (error) {
+        console.error('Error fetching payroll settings:', error);
+      }
+    };
+
+    useEffect(() => {
+      fetchCompensationSettings();
+    }, []);
+
+  // useEffect(() => {
+  //   fetchTimesheets();
+  // }, []);
+
+  const fetchEmployeeData = async () => {
+    const companyId = localStorage.getItem('companyId');
+    try {
+      const response = await fetch(`http://localhost:8000/api/employee/work-details/?company_id=${companyId}`);
+  
+      if (!response.ok) {
+        console.error('Failed to fetch employee data:', response.statusText);
+        return [];
+      }
+  
+      const data = await response.json();
+      console.log('API Response:', data); // Log the entire response for debugging
+  
+      // Ensure the response contains the 'custom_work_details' key
+      if (data && Array.isArray(data.custom_work_details)) {
+        setEmployeeData(data.custom_work_details);
+        return data.custom_work_details;
+      } else {
+        console.error('Invalid response format:', data);
+        return []; // Return an empty array if the structure is not as expected
+      }
     } catch (error) {
       console.error('Error fetching employee data:', error);
-      return [];
+      return []; // Handle fetch errors by returning an empty array
     }
+  };  
+    
+    
+  // Effect to fetch timesheets again when entering Step 3
+  useEffect(() => {
+    if (activeStep === 2) {
+      fetchTimesheets();
+      fetchEmployeeData();
+      fetchCompensationSettings();
+    }
+  }, [activeStep]);
+
+  // Calculate pay data
+  // useEffect(() => {
+  //   if (timesheets.length > 0 && employeeData.length > 0) {
+  //     const result = timesheets.map((attendanceEntry) => {
+  //       const empId = attendanceEntry.empId;
+  //       const employee = employeeData.find((emp) => emp.empId === empId);
+
+  //       if (!employee) return null;
+
+  //       const { CTCpayAMT, DLoansAMT } = employee.salary_details[0];
+  //       const { attendance, noOfDays, OT } = attendanceEntry;
+
+  //       const grossPay = Math.round((CTCpayAMT * attendance) / noOfDays);
+  //       const basic = Math.round(grossPay * 0.5);
+  //       const hra = Math.round(basic * 0.5);
+  //       const specialAllowance = grossPay - basic - hra;
+  //       const otPay = Math.round((grossPay * OT) / noOfDays);
+  //       const totalPay = grossPay + otPay;
+  //       const eePF = Math.round(basic > 15000 ? 15000 * 0.12 : basic * 0.12);
+  //       const esi = Math.round((totalPay - eePF)  * 0.0075);
+  //       const pt = grossPay > 20000 ? 200 : grossPay > 15000 ? 150 : 0;
+  //       const netPay = totalPay - eePF - esi - pt - DLoansAMT;
+
+  //       return {
+  //         ...attendanceEntry,
+  //         salary: CTCpayAMT,
+  //         basic,
+  //         hra,
+  //         specialAllowance,
+  //         grossPay,
+  //         otPay,
+  //         totalPay,
+  //         eePF: eePF.toFixed(2),
+  //         esi: esi.toFixed(2),
+  //         pt,
+  //         deductiblesLoans: DLoansAMT,
+  //         netPay: netPay.toFixed(2),
+  //       };
+  //     });
+
+  //     setCalculatedData(result.filter(Boolean)); // Filter out any null entries
+  //   }
+  // }, [timesheets, employeeData]);
+
+  // Calculate pay data
+  // useEffect(() => {
+  //   if (timesheets.length > 0 && employeeData.length > 0 && payrollSettings) {
+  //     const result = timesheets.map((attendanceEntry) => {
+  //       const empId = attendanceEntry.empId;
+  //       const employee = employeeData.find((emp) => emp.empId === empId);
+  
+  //       if (!employee) return null;
+  
+  //       const { CTCpayAMT, DLoansAMT } = employee.salary_details[0];
+  //       const { attendance, noOfDays, OT } = attendanceEntry;
+  
+  //       // Use payroll settings for percentage calculations
+  //       const basicPercentage = payrollSettings.basic_percentage / 100;
+  //       const hraPercentage = payrollSettings.hra_percentage / 100;
+  
+  //       const grossPay = Math.round((CTCpayAMT * attendance) / noOfDays);
+  //       const basic = Math.round(grossPay * basicPercentage);
+  //       const hra = Math.round(basic * hraPercentage);
+  //       const specialAllowance = grossPay - basic - hra;
+  //       const otPay = Math.round((grossPay * OT) / noOfDays);
+  //       const totalPay = grossPay + otPay;
+  
+  //       // Use payroll settings for PF calculation based on `pf_type`
+  //       let eePF = 0;
+  //       if (payrollSettings.pf) {
+  //         if (payrollSettings.pf_type === '15k') {
+  //           eePF = Math.round(basic > 15000 ? 15000 * 0.12 : basic * 0.12);
+  //         } else {
+  //           eePF = Math.round(basic * 0.12);
+  //         }
+  //       }
+
+  //       const esi = payrollSettings.esi ? Math.round((totalPay - eePF) * 0.0075) : 0;
+  //       const pt = payrollSettings.professional_tax
+  //         ? totalPay > 20000
+  //           ? 200
+  //           : totalPay > 15000
+  //           ? 150
+  //           : 0
+  //         : 0;
+  
+  //       const netPay = totalPay - eePF - esi - pt - DLoansAMT;
+  
+  //       return {
+  //         ...attendanceEntry,
+  //         salary: CTCpayAMT,
+  //         basic,
+  //         hra,
+  //         specialAllowance,
+  //         grossPay,
+  //         otPay,
+  //         totalPay,
+  //         eePF: eePF.toFixed(2),
+  //         esi: esi.toFixed(2),
+  //         pt,
+  //         deductiblesLoans: DLoansAMT,
+  //         netPay: netPay.toFixed(2),
+  //       };
+  //     });
+  
+  //     setCalculatedData(result.filter(Boolean)); // Filter out any null entries
+  //   }
+  // }, [timesheets, employeeData, payrollSettings]);
+
+
+  const calculateEEPF = (basic, payrollSettings) => {
+    let eePF = 0;
+    if (payrollSettings.pf) {
+      if (payrollSettings.pf_type === '15k') {
+        eePF = Math.round(basic > 15000 ? 15000 * 0.12 : basic * 0.12);
+      } else {
+        eePF = Math.round(basic * 0.12);
+      }
+    }
+    return eePF;
   };
+  
+  useEffect(() => {
+    if (timesheets.length > 0 && employeeData.length > 0 && payrollSettings) {
+      const result = timesheets.map((attendanceEntry) => {
+        const empId = attendanceEntry.empId;
+        const employee = employeeData.find((emp) => emp.empId === empId);
+  
+        if (!employee) return null;
+  
+        const { CTCpayAMT, DLoansAMT } = employee.salary_details[0];
+        const { attendance, no_of_days, OT, allowance, deductions } = attendanceEntry;
+  
+        // Basic Calculation
+        const basicPercentage = payrollSettings.basic_percentage / 100;
+        const daPercentage = payrollSettings.da_percentage / 100;
+        const hraPercentage = payrollSettings.hra_percentage / 100;
+  
+        let basic, da, hra, grossPay, specialAllowance;
+  
+        if (payrollSettings.da_enabled && !payrollSettings.hra_enabled) {
+          // DA enabled, HRA disabled
+          const E_Basic = Math.round(CTCpayAMT * basicPercentage);
+          const E_DA = Math.round(CTCpayAMT * daPercentage);
+          basic = Math.round((E_Basic * attendance) / no_of_days);
+          da = Math.round((E_DA * attendance) / no_of_days);
+          grossPay = basic + da;
+          specialAllowance = grossPay - basic - da;
+        } else if (payrollSettings.da_enabled && payrollSettings.hra_enabled) {
+          // Both DA and HRA enabled
+          const E_Basic = Math.round(CTCpayAMT * basicPercentage);
+          const E_DA = Math.round(E_Basic * daPercentage);
+          const E_HRA = Math.round(E_Basic * hraPercentage);
+          basic = Math.round((E_Basic * attendance) / no_of_days);
+          hra = Math.round((E_HRA * attendance) / no_of_days);
+          da = Math.round((E_DA * attendance) / no_of_days);
+          grossPay = basic + hra + da;
+          specialAllowance = grossPay - basic - hra - da;
+        } else if(!payrollSettings.da_enabled && payrollSettings.hra_enabled) {
+          // DA disabled HRA enabled
+          grossPay = Math.round((CTCpayAMT * attendance) / no_of_days);
+          basic = Math.round(grossPay * basicPercentage);
+          hra = Math.round(basic * hraPercentage);
+          da = 0;
+          specialAllowance = grossPay - basic - hra
+        } else {
+          // Default case if neither DA nor HRA is enabled
+          basic = Math.round((CTCpayAMT * basicPercentage * attendance) / no_of_days);
+          da = 0;
+          hra = 0;
+          grossPay = basic;
+          specialAllowance = grossPay - basic;
+        }
+  
+        // OT Calculation
+        const otPay = Math.round((grossPay * OT) / no_of_days);
+        const totalPay = grossPay + otPay + allowance;
+
+        
+  
+        // PF Calculation using the new function
+        const eePF = calculateEEPF(basic, payrollSettings);
+  
+        // ESI and PT Calculation
+        const esi = payrollSettings.esi ? Math.round((totalPay - eePF) * 0.0075) : 0;
+        const pt = payrollSettings.professional_tax
+          ? totalPay > 20000
+            ? 200
+            : totalPay > 15000
+            ? 150
+            : 0
+          : 0;
+  
+        // Final Net Pay Calculation
+        const netPay = totalPay - eePF - esi - pt - DLoansAMT - deductions;
+  
+        return {
+          ...attendanceEntry,
+          salary: CTCpayAMT,
+          basic,
+          hra: hra || 0, // Ensure HRA is 0 if not applicable
+          da: da || 0, // Ensure DA is 0 if not applicable
+          special_allowance: specialAllowance,
+          grossPay,
+          otPay,
+          allowance,
+          totalPay,
+          eePF: eePF.toFixed(2),
+          esi: esi.toFixed(2),
+          pt,
+          deductiblesLoans: DLoansAMT,
+          deductions,
+          net_pay: netPay.toFixed(2),
+        };
+      });
+  
+      setCalculatedData(result.filter(Boolean)); // Filter out any null entries
+    }
+  }, [timesheets, employeeData, payrollSettings]);
+  
 
   const handleSubmit = async () => {
     setErrorMessages([]);
     setSuccessMessage(''); // Clear any previous success message
-    // Validate file names
-    if (uploadedFileName !== downloadedFileName) {
-      console.log("upname",uploadedFileName)
-      console.log("downname",downloadedFileName)
-      alert('The uploaded file name must be the same as the downloaded file name.');
-      return; // Prevent submission
-    }
-
-    const employeeData = await fetchEmployeeData();
-    const companyId = localStorage.getItem('companyId');  // Fetch company ID from local storage
+  
+    // Fetch employee data from the new API structure
+    const companyId = localStorage.getItem('companyId');  
+    const employeeData = await fetchEmployeeData(); 
+  
     if (!Array.isArray(employeeData)) {
       console.error('Expected employeeData to be an array but got:', employeeData);
       return;
     }
-
-    const employeeSet = new Set(employeeData.map((emp) => emp.empId));
-    const timesheetEmployeeSet = new Set(timeSheetData.map((entry) => String(entry.empId)));
-
+  
+    // Extract employee IDs from the new response structure
+    const employeeSet = new Set(employeeData.map(emp => String(emp.empId)));
+    const timesheetEmployeeSet = new Set(timeSheetData.map(entry => String(entry.empId)));
+  
     console.log('Employee Set:', employeeSet);
     console.log('Timesheet Employee Set:', timesheetEmployeeSet);
   
-    // Check for missing employees (in employeeSet but not in timesheetEmployeeSet)
-    const missingEmployees = [...employeeSet].filter((empId) => !timesheetEmployeeSet.has(empId));
+    // Check for missing employees (present in employeeSet but not in timesheetEmployeeSet)
+    const missingEmployees = [...employeeSet].filter(empId => !timesheetEmployeeSet.has(empId));
     console.log('Missing Employees:', missingEmployees);
-
-    // Check for extra employees (in timesheetEmployeeSet but not in employeeSet)
-    const extraEmployees = [...timesheetEmployeeSet].filter((empId) => !employeeSet.has(empId));
+  
+    // Check for extra employees (present in timesheetEmployeeSet but not in employeeSet)
+    const extraEmployees = [...timesheetEmployeeSet].filter(empId => !employeeSet.has(empId));
     console.log('Extra Employees:', extraEmployees);
 
+
+    // If there are missing employees or extra employees, show the respective messages
+  
     // If there are missing employees or extra employees, show the respective messages
     if (missingEmployees.length > 0 || extraEmployees.length > 0) {
-      // Handle missing employees message
       if (missingEmployees.length > 0) {
-        setMissingEmployees(missingEmployees); // Store the missing employees
-        setShowMissingOptions(true); // Show the Yes/No options for missing employees
+        setMissingEmployees(missingEmployees);
+        setShowMissingOptions(true); // Show Yes/No options for missing employees
       }
+
 
       // Handle extra employees message
+  
+      // Handle extra employees message
       if (extraEmployees.length > 0) {
-        setExtraEmployees(extraEmployees); // Store the extra employees
-        setShowExtraOptions(true); // Show the Yes/No options for extra employees
+        setExtraEmployees(extraEmployees);
+        setShowExtraOptions(true); // Show Yes/No options for extra employees
       }
-
-      return; // Return here if either missing or extra employees are found
+  
+      return; // Stop submission if there are discrepancies
     }
-
-    // Rest of the validation logic
-    const invalidEntries = timeSheetData.map((entry) => {
+  
+    // Validate each timesheet entry
+    const invalidEntries = timeSheetData.map(entry => {
       const monthName = entry.month.split(' ')[0];
       const fullMonthName = new Date(`${monthName} 1`).toLocaleString('default', { month: 'long' });
       const daysWorked = Number(entry.noOfDays);
       const attendance = Number(entry.attendance);
       const lopDays = Number(entry.lopDays);
+  
       const isDaysValid = isValidDays(fullMonthName, daysWorked);
       const isAttendanceValid = attendance <= daysWorked;
       const isAttendanceLopValid = attendance + lopDays === daysWorked;
       const isEmpIdValid = employeeSet.has(String(entry.empId));
-
+  
       return {
         entry,
         isDaysValid,
@@ -201,8 +508,13 @@ const TimeSheetPage = () => {
         isAttendanceLopValid,
         isEmpIdValid,
       };
-    }).filter((validation) => !validation.isDaysValid || !validation.isAttendanceValid || !validation.isAttendanceLopValid || !validation.isEmpIdValid);
-
+    }).filter(validation => 
+      !validation.isDaysValid || 
+      !validation.isAttendanceValid || 
+      !validation.isAttendanceLopValid || 
+      !validation.isEmpIdValid
+    );
+  
     if (invalidEntries.length > 0) {
       const messages = invalidEntries.map(({ entry, isDaysValid, isAttendanceValid, isAttendanceLopValid, isEmpIdValid }) => {
         let message = `${entry.name}: `;
@@ -211,7 +523,7 @@ const TimeSheetPage = () => {
         const daysWorked = Number(entry.noOfDays);
         const attendance = Number(entry.attendance);
         const lopDays = Number(entry.lopDays);
-
+  
         if (!isDaysValid) {
           message += `${daysWorked} is not a valid number of days in ${fullMonthName}. `;
         }
@@ -224,23 +536,27 @@ const TimeSheetPage = () => {
         if (!isEmpIdValid) {
           message += `EmpId (${entry.empId}) for ${entry.name} is not valid. `;
         }
-
+  
         return message;
       });
-
+  
       setErrorMessages(messages);
       return;
     }
-
+  
     // Add company_id to each timesheet entry before uploading
-    const updatedTimeSheetData = timeSheetData.map((entry) => ({
+    const updatedTimeSheetData = timeSheetData.map(entry => ({
       ...entry,
-      company: companyId,  // Attach companyId to each entry
+      month: formatMonthToMMYYYY(entry.month),
+      company: companyId, // Attach companyId to each entry
     }));
 
+
+    // If all validations pass, submit the timesheet data
+  
     // If all validations pass, submit the timesheet data
     try {
-
+      localStorage.setItem('month', updatedTimeSheetData.month);
       const response = await fetch('http://127.0.0.1:8000/timesheet/upload/', {
         method: 'POST',
         headers: {
@@ -248,25 +564,20 @@ const TimeSheetPage = () => {
         },
         body: JSON.stringify(updatedTimeSheetData),
       });
+  
       if (response.ok) {
-      setSuccessMessage('Data uploaded successfully!'); // Display success message
-    } else {
-      const data = await response.json();
-      setErrorMessages([data.message || 'Error uploading data.']); // Show server error
-    }
+        setSuccessMessage('Data uploaded successfully!');
+      } else {
+        const data = await response.json();
+        setErrorMessages([data.message || 'Error uploading data.']);
+      }
     } catch (error) {
       console.error('Error uploading data:', error);
-      setErrorMessages(['There was an error in submitting your data.']); // Display error message
+      setErrorMessages(['There was an error in submitting your data.']);
     }
   };
-  //     .then((response) => response.json())
-  //     .then((data) => {
-  //       alert('Data uploaded successfully!');
-  //     })
-  //     .catch((error) => {
-  //       console.error('Error uploading data:', error);
-  //     });
-  // };
+  
+
 
   const handleYesMissing = () => {
     navigate('/employeelist'); // Navigate if the user chooses to delete missing employees
@@ -283,6 +594,40 @@ const TimeSheetPage = () => {
   const handleNoExtra = () => {
     setShowExtraOptions(false); // Hide the Yes/No options for extra employees
   };
+
+  // const savePayData = async () => {
+
+  //   console.log("Payload to be sent:", calculatedData);
+
+  //   try {
+  //     const response = await axios.post(
+  //       'http://127.0.0.1:8000/api/save-pay-data/', 
+  //       calculatedData
+  //     );
+  
+  //     console.log('Data saved successfully:', response.data);
+  //     setSuccessMessage('Pay data saved successfully!');
+  //   } catch (error) {
+  //     console.error('Error saving pay data:', error);
+  //     setErrorMessages(['Error saving pay data. Please try again.']);
+  //   }
+  // };
+  const savePayData = async () => {
+    try {
+      for (const entry of calculatedData) {
+        const response = await axios.post(
+          'http://127.0.0.1:8000/api/save-pay-data/', 
+          entry // Send each entry separately
+        );
+        console.log('Data saved successfully:', response.data);
+      }
+      setSuccessMessage('Pay data saved successfully!');
+    } catch (error) {
+      console.error('Error saving pay data:', error);
+      setErrorMessages(['Error saving pay data. Please try again.']);
+    }
+  };
+  
 
   return (
     <div>
@@ -333,6 +678,8 @@ const TimeSheetPage = () => {
                       <th>Attendance</th>
                       <th>LOP Days</th>
                       <th>OT</th>
+                      <th>Allowance</th>
+                      <th>Deductions</th>
                       </tr>
                 </thead>
                 <tbody>
@@ -346,6 +693,8 @@ const TimeSheetPage = () => {
                       <td>{entry.attendance}</td>
                       <td>{entry.lopDays}</td>
                       <td>{entry.OT}</td>
+                      <td>{entry.allowance}</td>
+                      <td>{entry.deductions}</td>
                     </tr>
                     ))}
                   </tbody>
@@ -355,7 +704,7 @@ const TimeSheetPage = () => {
 
             {/* Button Group for Back and Submit */}
             <div className="button-group-two">
-              <Button onClick={handleBack} variant="contained" sx={{ mr: 2 }}>
+              <Button onClick={handleBack} variant="contained" sx={{ mr: 3 }}>
                 Back
               </Button>
               <Button
@@ -364,6 +713,15 @@ const TimeSheetPage = () => {
                 onClick={handleSubmit}
               >
                 Submit
+              </Button>
+              <Button 
+                variant="contained"
+                sx={{ mr: 3 }}
+                color="primary"
+                onClick={handleNext}
+                // sx={{ mt: 2 }}  // Adds margin-top for spacing
+              >
+                Next
               </Button>
             </div>
             <div>
@@ -390,6 +748,88 @@ const TimeSheetPage = () => {
             </div>
           </div>
         )}
+
+        {activeStep === 2 && (
+          <div className="step-content">
+            <h2>Step 3: Review and Calculate Pay</h2>
+            
+            <div className="timesheet-table">
+              <h2>Timesheet Data</h2>
+              <table>
+                <thead>
+                  <tr>
+                    <th>SNO</th>
+                    <th>Emp ID</th>
+                    <th>Name</th>
+                    <th>Month</th>
+                    <th>No. of Days</th>
+                    <th>Attendance</th>
+                    <th>OT</th>
+                    <th>LOP Days</th>
+                    <th>Salary</th>
+                    <th>Basic</th>
+                    <th>DA</th>
+                    <th>HRA</th>
+                    <th>Special Allowance</th>
+                    <th>Gross Pay</th>
+                    <th>OT Pay</th>
+                    <th>Allowance</th>
+                    <th>Total Pay</th>
+                    <th>EE PF</th>
+                    <th>ESI</th>
+                    <th>PT</th>
+                    <th>Deductibles & Loans</th>
+                    <th>This month Deductions</th>
+                    <th>Net Pay</th>
+                  </tr>
+                </thead>
+                  <tbody>
+                    {calculatedData.map((entry, index) => (
+                      <tr key={index}>
+                        <td>{index + 1}</td>
+                        <td>{entry.empId}</td>
+                        <td>{entry.name}</td>
+                        <td>{entry.month}</td>
+                        <td>{entry.no_of_days}</td>
+                        <td>{entry.attendance}</td>
+                        <td>{entry.OT}</td>
+                        <td>{entry.lop_days}</td>
+                        <td>{entry.salary}</td>
+                        <td>{entry.basic}</td>
+                        <td>{entry.da}</td>
+                        <td>{entry.hra}</td>
+                        <td>{entry.special_allowance}</td>
+                        <td>{entry.grossPay}</td>
+                        <td>{entry.otPay}</td>
+                        <td>{entry.allowance}</td>
+                        <td>{entry.totalPay}</td>
+                        <td>{entry.eePF}</td>
+                        <td>{entry.esi}</td>
+                        <td>{entry.pt}</td>
+                        <td>{entry.deductiblesLoans}</td>
+                        <td>{entry.deductions}</td>
+                        <td>{entry.net_pay}</td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="button-group-two">
+              <Button onClick={handleBack} variant="contained" sx={{ mr: 2 }}>
+                Back
+              </Button>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={savePayData} // Make sure to handle the submission of this data appropriately
+              >
+                Submit
+              </Button>
+            </div>
+          </div>
+        )}
+
 
         {/* Missing Employees Options */}
         {showMissingOptions && (

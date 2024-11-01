@@ -17,7 +17,7 @@ const Home = () => {
             <li><a href="/employeesetup">Employee Setup</a></li>
             <li><a href="/employeelist">Employee List</a></li>
             <li><a href="/Attendance">Attendance</a></li>
-            <li><a href="/payslipvalidation">Pay Slip</a></li>
+            <li><a href="/PaySlipValid">Pay Slip</a></li>
           </ul>
         </div>
         <div className="content-box">

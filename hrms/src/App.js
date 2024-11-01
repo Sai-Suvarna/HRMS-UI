@@ -11,6 +11,7 @@ import EmployeeList from './components/EmployeeList';
 import TimeSheetPage from './components/TimeSheetPage';
 import payslipvalidation from './components/payslipvalidation';
 import EmployeeSetupGrid from './components/EmployeeSetupGrid';
+import PayroleSet from './components/PayroleSet';
 
 
 import './App.css';
@@ -31,6 +32,7 @@ function App() {
           <Route path="/EmployeeSetupGrid" element={<EmployeeSetupGrid />} /> 
           <Route path="/Attendance" element={<TimeSheetPage />} />
           <Route path="/payslipvalidation" element={<payslipvalidation />} />
+          <Route path="/payroleset" element={<PayroleSet/>} />
         </Routes>
       </div>
     </Router>

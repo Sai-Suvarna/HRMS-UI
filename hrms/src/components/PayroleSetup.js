@@ -7,7 +7,8 @@ import { useNavigate } from 'react-router-dom';
 const PayroleSetup = () => {
   const [formData, setFormData] = useState({
     basic_percentage: '50',
-    da_percentage: '',
+    da_enabled: false,
+    da_percentage: '0',
     hra_percentage: '20',
     // advances: false,
     variable_pay: false,
@@ -43,7 +44,7 @@ const PayroleSetup = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const calculateBasic = (percentage, grossPay) => grossPay * (percentage / 100);
-  const calculateDA = (percentage, basicSalary) => basicSalary * (percentage / 100);
+  const calculateDA = (percentage, grossPay) => grossPay * (percentage / 100);
   const calculateHRA = (basicSalary, percentage) => basicSalary * (percentage / 100);
   const calculatePF = (basicSalary) => basicSalary * 0.12;  // PF is 12% of Basic Salary
   const calculateDeductions = useCallback((formData, basicSalary) => {
@@ -112,6 +113,15 @@ const PayroleSetup = () => {
     const basic = calculateBasic(formData.basic_percentage, grossPay);
     const hra = calculateHRA(basic, formData.hra_percentage);
     const da = calculateDA(formData.da_percentage, grossPay);
+    let eePF = 0;
+    if (formData.pf) {
+      if (formData.pf_type === '15k') {
+        eePF = Math.round(basic > 15000 ? 15000 * 0.12 : basic * 0.12);
+      } else if (formData.pf_type === '!=15k') {
+        eePF = Math.round(basic * 0.12);
+      }
+    }   
+    // const pf = eePF ;
     
     const variablePay = formData.variable_pay ? 3000 : 0;  
     const quarterlyAllowance = formData.quarterly_allowance ? 2000 : 0;  
@@ -133,7 +143,7 @@ const PayroleSetup = () => {
       quarterlyBonus: quarterlyBonus,
       annualBonus: annualBonus,
       specialAllowance: specialAllowance,
-      providentFund: formData.pf ? calculatePF(basic) : 0,  
+      providentFund: formData.pf ? eePF : 0,  
       professionalTax: formData.professional_tax ? 200 : 0,  
       totalEarnings: totalEarnings,
       totalDeductions: totalDeductions,
@@ -218,7 +228,7 @@ const PayroleSetup = () => {
       amount3: formData.amount3 || 0,
       reimbursement4: formData.reimbursement4 || 'Reimbursement 4',
       amount4: formData.amount4 || 0,
-  };
+    };
   
     // Prepare data to store in localStorage
     const dataToStore = {
@@ -289,7 +299,7 @@ const PayroleSetup = () => {
               <span className="percentage-symbol">% of Monthaly Pay</span>
             </div>
 
-            <div className="form-group">
+            {/* <div className="form-group">
               <label>DA Percentage:</label>
               <input
                 type="number"
@@ -299,7 +309,37 @@ const PayroleSetup = () => {
                 required
               />
               <span className="percentage-symbol">% of Monthaly Pay</span>
+            </div> */}
+
+            <div className="form-group">
+              <label> Dearness Allowance (DA): </label>
+              <input
+                type="checkbox"
+                name="da_enabled"
+                checked={formData.da_enabled}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    da_enabled: e.target.checked,
+                    da_percentage: e.target.checked ? prev.da_percentage : '', // Reset if unchecked
+                  }))
+                }
+              />
             </div>
+
+            {formData.da_enabled && (
+              <div className="form-group">
+                <label>DA Percentage:</label>
+                <input
+                  type="number"
+                  name="da_percentage"
+                  value={formData.da_percentage}
+                  onChange={handleChange}
+                  required
+                />
+                <span className="percentage-symbol">% of Monthly Pay</span>
+              </div>
+            )}
   
             <div className="form-group">
               <label>HRA Percentage:</label>
@@ -609,85 +649,84 @@ const PayroleSetup = () => {
           </div>
         </form>
         <div className="table-container">
-        <h1 className="demo-payslip-heading">Demo Payslip</h1>
-
-          <h3>Earnings and Deductions</h3>
-          <table>
-            <thead>
-              <tr>
-                <th>Earnings</th>
-                <th></th>
-                <th>Deductions</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>Basic Salary</td>
-                <td>{totals.basic} Rs</td>
-                <td>Provident Fund (PF)</td>
-                <td>{totals.providentFund} Rs</td>
-              </tr>
-              <tr>
-                <td>Dearness Allowance (DA)</td>
-                <td>{totals.da} Rs</td>  {/* New DA row */}
-                <td>Professional Tax</td>
-                <td>{totals.professionalTax} Rs</td>
-              </tr>
-              <tr>
-                <td>House Rent Allowance (HRA)</td>
-                <td>{totals.hra} Rs</td>
-                {/* <td>Advances</td>
-                <td>{formData.advances ? 500 : 0} Rs</td> */}
-                <td>ESI</td>
-                <td>{formData.esi ? 500 : 0} Rs</td>
-              </tr>
-              <tr>
-                <td>Special Allowance</td>
-                <td>{totals.specialAllowance} Rs</td>
-                <td>Deductions & Loans</td>
-                <td>{formData.deductions ? 1000 : 0} Rs</td>
-              </tr>
-              <tr>
-                <td>Variable Pay</td>
-                <td>{totals.variablePay} Rs</td>
-                <td>Voluntary Provident Fund</td>
-                <td>{formData.voluntary_pf ? (totals.providentFund) : 0} Rs</td>  
-              </tr>
-              <tr>
-                <td>Quarterly Allowance</td>
-                <td>{totals.quarterlyAllowance} Rs</td>
-                <td></td>
-                <td></td> 
-              </tr>
-              <tr>
-                <td>Quarterly Bonus</td>
-                <td>{totals.quarterlyBonus} Rs</td>
-                <td></td>
-                <td></td> 
-              </tr>
-              <tr>
-                <td>Annual Bonus</td>
-                <td>{totals.annualBonus} Rs</td>
-                <td></td>
-                <td></td>
-              </tr>
-             
-              <tr className="total-row">
-                <td>Total Earnings (Gross Pay)</td>
-                <td>{totals.totalEarnings} Rs</td>
-                <td>Total Deductions</td>
-                <td>{totals.totalDeductions} Rs</td>
-              </tr>
-              <tr className="total-row">
-                <td colSpan="2">Net Amount Paid</td>
-                <td colSpan="2">{totals.netAmount} Rs</td>
-              </tr>
-            </tbody>
-          </table>
-          <div className="ctc-info">
-                **Gross Pay = 36000
-          </div>
+          <h1 className="demo-payslip-heading">Demo Payslip</h1>
+            <h3>Earnings and Deductions</h3>
+            <table>
+              <thead>
+                <tr>
+                  <th>Earnings</th>
+                  <th></th>
+                  <th>Deductions</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Basic Salary</td>
+                  <td>{totals.basic} Rs</td>
+                  <td>Provident Fund (PF)</td>
+                  <td>{totals.providentFund} Rs</td>
+                </tr>
+                <tr>
+                  <td>Dearness Allowance (DA)</td>
+                  <td>{totals.da} Rs</td>  {/* New DA row */}
+                  <td>Professional Tax</td>
+                  <td>{totals.professionalTax} Rs</td>
+                </tr>
+                <tr>
+                  <td>House Rent Allowance (HRA)</td>
+                  <td>{totals.hra} Rs</td>
+                  {/* <td>Advances</td>
+                  <td>{formData.advances ? 500 : 0} Rs</td> */}
+                  <td>ESI</td>
+                  <td>{formData.esi ? 500 : 0} Rs</td>
+                </tr>
+                <tr>
+                  <td>Special Allowance</td>
+                  <td>{totals.specialAllowance} Rs</td>
+                  <td>Deductions & Loans</td>
+                  <td>{formData.deductions ? 1000 : 0} Rs</td>
+                </tr>
+                <tr>
+                  <td>Variable Pay</td>
+                  <td>{totals.variablePay} Rs</td>
+                  <td>Voluntary Provident Fund</td>
+                  <td>{formData.voluntary_pf ? (totals.providentFund) : 0} Rs</td>  
+                </tr>
+                <tr>
+                  <td>Quarterly Allowance</td>
+                  <td>{totals.quarterlyAllowance} Rs</td>
+                  <td></td>
+                  <td></td> 
+                </tr>
+                <tr>
+                  <td>Quarterly Bonus</td>
+                  <td>{totals.quarterlyBonus} Rs</td>
+                  <td></td>
+                  <td></td> 
+                </tr>
+                <tr>
+                  <td>Annual Bonus</td>
+                  <td>{totals.annualBonus} Rs</td>
+                  <td></td>
+                  <td></td>
+                </tr>
+              
+                <tr className="total-row">
+                  <td>Total Earnings (Gross Pay)</td>
+                  <td>{totals.totalEarnings} Rs</td>
+                  <td>Total Deductions</td>
+                  <td>{totals.totalDeductions} Rs</td>
+                </tr>
+                <tr className="total-row">
+                  <td colSpan="2">Net Amount Paid</td>
+                  <td colSpan="2">{totals.netAmount} Rs</td>
+                </tr>
+              </tbody>
+            </table>
+            <div className="ctc-info">
+                  **Gross Pay = 36000
+            </div>
         </div>
       </div>
     </div>

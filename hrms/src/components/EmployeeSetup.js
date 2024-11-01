@@ -164,7 +164,7 @@ const EmployeeSetup = () => {
     if (payrollSettings) {
       const basic = (payrollSettings.basic_percentage / 100) * value;
       const da = (payrollSettings.da_percentage / 100) * value;
-      const hra = (payrollSettings.hra_percentage / 100) * value;
+      const hra = (payrollSettings.hra_percentage / 100) * basic;
 
       // Update form fields dynamically
       form.setFieldsValue({
@@ -797,29 +797,30 @@ const EmployeeSetup = () => {
                       <Input value={form.getFieldValue('salary_details.BasicpayAMT')} onChange={handleBasicPayChange} />
                     </Form.Item>
                   </div>
-
+                  
                   <div className="form-col">
                     <Form.Item
-                      label="DA Pay"
-                      name={['salary_details', 'DApayAMT']}
-                      rules={[{ required: true, message: 'Please enter DA pay value' }]}
+                      label="HRA Pay"
+                      name={['salary_details', 'HRApayAMT']}
+                      rules={[{ required: true, message: 'Please enter HRA pay value' }]}
                     >
-                      <Input value={form.getFieldValue('salary_details.DApayAMT')} onChange={handleDaPayChange} />
+                      <Input value={form.getFieldValue('salary_details.HRApayAMT')} onChange={handleHraPayChange} />
                     </Form.Item>
                   </div>
                 </div>
 
-                <div className="form-col">
-                  <Form.Item
-                    label="HRA Pay"
-                    name={['salary_details', 'HRApayAMT']}
-                    rules={[{ required: true, message: 'Please enter HRA pay value' }]}
-                  >
-                    <Input value={form.getFieldValue('salary_details.HRApayAMT')} onChange={handleHraPayChange} />
-                  </Form.Item>
-                </div>
-    
-    
+                {payrollSettings?.da_enabled && (
+                  <div className="form-col">
+                      <Form.Item
+                        label="DA Pay"
+                        name={['salary_details', 'DApayAMT']}
+                        rules={[{ required: true, message: 'Please enter DA pay value' }]}
+                      >
+                        <Input value={form.getFieldValue('salary_details.DApayAMT')} onChange={handleDaPayChange} />
+                      </Form.Item>
+                  </div>
+                )}
+
                 {/* {payrollSettings?.reimbursements && Object.keys(payrollSettings.reimbursements).length > 0 && (
                   <>
                     {Object.entries(payrollSettings.reimbursements).map(([name, amount], index) => (
