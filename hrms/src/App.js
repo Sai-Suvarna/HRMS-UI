@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import LoginForm from './components/LoginForm';
 import RegisterForm from './components/RegisterForm';
 import Home from './components/Home';
-import HomePage from './components/HomePage';
+// import HomePage from './components/HomePage';
 import CompanySetup from './components/CompanySetup';
 import EmployeeSetup from './components/EmployeeSetup';
 import PayroleSetup from './components/PayroleSetup';
@@ -16,6 +16,7 @@ import PayroleSet from './components/PayroleSet';
 import Logout from './components/Logout';
 import CompanyDetails from './components/CompanyDetails';
 import UpdateCompanyDetails from './components/UpdateCompanyDetails';
+import Validation from './components/Validation';
 
 import './App.css';
 
@@ -42,6 +43,7 @@ function App() {
           <Route path="/logout" element={<Logout />} />
           <Route path="/companydetails" element={<CompanyDetails />} /> {/* Add route */}
           <Route path="/updatecompanydetails" element={<UpdateCompanyDetails />} /> {/* Add this route */}
+          <Route path="/Validation" element={<Validation />} />
 
         </Routes>
       </div>

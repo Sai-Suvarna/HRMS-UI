@@ -83,6 +83,8 @@ const TimeSheetPage = () => {
   const [employeeData, setEmployeeData] = useState([]);
   const [calculatedData, setCalculatedData] = useState([]);
   const [payrollSettings, setPayrollSettings] = useState(null);
+  const [dynamicHeaders, setDynamicHeaders] = useState([]);
+
 
   const handleNext = () => {
     setActiveStep((prevStep) => prevStep + 1);
@@ -140,20 +142,40 @@ const TimeSheetPage = () => {
 
   // Fetch attendance data (Timesheets)
   
+  // const fetchTimesheets = async () => {
+  //   const companyId = localStorage.getItem('companyId');
+  //   console.log('Fetching timesheets for company ID:', companyId);
+
+  //   try {
+  //     const response = await axios.get(
+  //       `http://127.0.0.1:8000/timesheet-view/${companyId}/`
+  //     );
+  //     console.log('Fetched Timesheets:', response.data.Attendance_data);
+  //     setTimesheets(response.data.Attendance_data);
+  //   } catch (error) {
+  //     console.error('Error fetching timesheets:', error);
+  //   }
+  // };  
+
   const fetchTimesheets = async () => {
     const companyId = localStorage.getItem('companyId');
-    console.log('Fetching timesheets for company ID:', companyId);
+    const month = localStorage.getItem('month'); // Retrieve the month from local storage
+
+    console.log('Fetching timesheets for company ID:', companyId, 'and month:', month);
 
     try {
-      const response = await axios.get(
-        `http://127.0.0.1:8000/timesheet-view/${companyId}/`
-      );
-      console.log('Fetched Timesheets:', response.data.Attendance_data);
-      setTimesheets(response.data.Attendance_data);
+        const response = await axios.get(
+            `http://127.0.0.1:8000/timesheet-view/${companyId}/${month}/`
+        );
+        console.log('Fetched Timesheets:', response.data.Attendance_data);
+        setTimesheets(response.data.Attendance_data);
     } catch (error) {
-      console.error('Error fetching timesheets:', error);
+        console.error('Error fetching timesheets:', error);
     }
-  };  
+};
+
+
+
 
   
     const fetchCompensationSettings = async () => {
@@ -356,6 +378,19 @@ const TimeSheetPage = () => {
         const hraPercentage = payrollSettings.hra_percentage / 100;
   
         let basic, da, hra, grossPay, specialAllowance;
+
+        // Reimbursement Calculation
+        const reimbursements = employee.salary_details[0].reimbursements || {};
+        let reimbursementTotal = 0;
+        const reimbursementDetails = [];
+
+        for (const [name, value] of Object.entries(reimbursements)) {
+            const reimbursementValue = parseFloat(value);
+            reimbursementTotal += reimbursementValue;
+            reimbursementDetails.push({ name, amount: reimbursementValue });
+        }
+
+  
   
         if (payrollSettings.da_enabled && !payrollSettings.hra_enabled) {
           // DA enabled, HRA disabled
@@ -364,7 +399,7 @@ const TimeSheetPage = () => {
           basic = Math.round((E_Basic * attendance) / no_of_days);
           da = Math.round((E_DA * attendance) / no_of_days);
           grossPay = basic + da;
-          specialAllowance = grossPay - basic - da;
+          specialAllowance = grossPay - basic - da - reimbursementTotal;
         } else if (payrollSettings.da_enabled && payrollSettings.hra_enabled) {
           // Both DA and HRA enabled
           const E_Basic = Math.round(CTCpayAMT * basicPercentage);
@@ -374,26 +409,28 @@ const TimeSheetPage = () => {
           hra = Math.round((E_HRA * attendance) / no_of_days);
           da = Math.round((E_DA * attendance) / no_of_days);
           grossPay = basic + hra + da;
-          specialAllowance = grossPay - basic - hra - da;
+          specialAllowance = grossPay - basic - hra - da - reimbursementTotal;
         } else if(!payrollSettings.da_enabled && payrollSettings.hra_enabled) {
           // DA disabled HRA enabled
           grossPay = Math.round((CTCpayAMT * attendance) / no_of_days);
           basic = Math.round(grossPay * basicPercentage);
           hra = Math.round(basic * hraPercentage);
           da = 0;
-          specialAllowance = grossPay - basic - hra
+          specialAllowance = grossPay - basic - hra - reimbursementTotal;
         } else {
           // Default case if neither DA nor HRA is enabled
           basic = Math.round((CTCpayAMT * basicPercentage * attendance) / no_of_days);
           da = 0;
           hra = 0;
           grossPay = basic;
-          specialAllowance = grossPay - basic;
+          specialAllowance = grossPay - basic - reimbursementTotal;
         }
   
         // OT Calculation
         const otPay = Math.round((grossPay * OT) / no_of_days);
         const totalPay = grossPay + otPay + allowance;
+
+        
 
         
   
@@ -728,23 +765,39 @@ const TimeSheetPage = () => {
       return;
     }
   
-    // Add company_id to each timesheet entry before uploading
-    const updatedTimeSheetData = timeSheetData.map(entry => ({
-      ...entry,
-      month: formatMonthToMMYYYY(entry.month),
-      company: companyId, // Attach companyId to each entry
-
-    // const updatedTimeSheetData = timeSheetData.map((entry) => ({
+    // // Add company_id to each timesheet entry before uploading
+    // const updatedTimeSheetData = timeSheetData.map(entry => ({
     //   ...entry,
-    //   company: companyId,  
-    }));
+    //   month: formatMonthToMMYYYY(entry.month),
+    //   company: companyId, // Attach companyId to each entry
 
+    // // const updatedTimeSheetData = timeSheetData.map((entry) => ({
+    // //   ...entry,
+    // //   company: companyId,  
+    // }));
 
-    // If all validations pass, submit the timesheet data
+    console.log("Original Month Data:", timeSheetData); // Log the original data
+
+    const updatedTimeSheetData = timeSheetData.map(entry => {
+      const formattedMonth = formatMonthToMMYYYY(entry.month);
+      console.log("Formatted Month:", formattedMonth); // Log the formatted month
+      return {
+        ...entry,
+        month: formattedMonth,
+        company: companyId,
+      };
+    });
+    
+    console.log("Updated TimeSheet Data Before Upload:", updatedTimeSheetData); // Log the final data
+
+    // Store the month value (you can take the month from the first entry or use your logic)
+    if (updatedTimeSheetData.length > 0) {
+      localStorage.setItem('month', updatedTimeSheetData[0].month); // Save the first entry's month
+    }
+
   
     // If all validations pass, submit the timesheet data
     try {
-      localStorage.setItem('month', updatedTimeSheetData.month);
       const response = await fetch('http://127.0.0.1:8000/timesheet/upload/', {
         method: 'POST',
         headers: {
@@ -986,6 +1039,10 @@ const TimeSheetPage = () => {
                     <th>Basic</th>
                     <th>DA</th>
                     <th>HRA</th>
+                    {/* Add dynamic reimbursement headers
+                    {dynamicHeaders.map((header, index) => (
+                      <th key={index}>{header}</th>
+                    ))} */}
                     <th>Special Allowance</th>
                     <th>Gross Pay</th>
                     <th>OT Pay</th>
@@ -1014,6 +1071,10 @@ const TimeSheetPage = () => {
                         <td>{entry.basic}</td>
                         <td>{entry.da}</td>
                         <td>{entry.hra}</td>
+                        {/* Display dynamic reimbursement values */}
+                        {/* {dynamicHeaders.map((header, index) => (
+                          <td key={index}>{entry.reimbursements?.[header] || '-'}</td>
+                        ))} */}
                         <td>{entry.special_allowance}</td>
                         <td>{entry.grossPay}</td>
                         <td>{entry.otPay}</td>

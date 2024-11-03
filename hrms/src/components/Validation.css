@@ -1,0 +1,20 @@
+/* App.css */
+
+.table-container {
+    padding: 20px;
+  }
+  
+  .select-month {
+    margin-bottom: 20px;
+    min-width: 200px;
+  }
+  
+  .submit-button {
+    margin-left: 10px;
+  }
+  
+  .table-header {
+    background-color: #f5f5f5;
+    font-weight: bold;
+  }
+  
