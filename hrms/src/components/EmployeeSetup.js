@@ -7,10 +7,11 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import dayjs from 'dayjs';
 
-// import { Form, Input, Button, DatePicker, Select, message, Tabs, Divider } from 'antd';
-import moment from 'moment';
 import './EmployeeSetup.css'; 
 import { useNavigate } from 'react-router-dom';
+
+import { jwtDecode } from 'jwt-decode'; 
+
 
 
 const { Option } = Select;
@@ -19,29 +20,47 @@ const { TabPane } = Tabs;
 const EmployeeSetup = () => {
   const [form, setFormData] = Form.useForm();
   const [activeTabKey, setActiveTabKey] = useState('1'); // State to keep track of the active tab
-  // const [compensationSettings, setCompensationSettings] = useState({});
   const [payrollSettings, setPayrollSettings] = useState(null);
   const navigate = useNavigate();
-  // const fetchCompensationSettings = async () => {
-  //   try {
-  //     const response = await axios.get('http://localhost:8000/api/payroledetails/'); // Adjust the endpoint as needed
-  //     setCompensationSettings(response.data);
-  //   } catch (error) {
-  //     console.error('Failed to fetch compensation settings:', error);
-  //   }
-  // };
-
-  
   const [grossPay, setGrossPay] = useState('');
   const [specialAllowances, setSpecialAllowances] = useState(0); // For special allowances calculation
-  // const [setPfType] = useState(''); // State for selected PF Type
   // const [setProfessionalTax] = useState(0); // State for Professional Tax
   const [pfType, setPfType] = useState(''); // State for selected PF Type
   const [pfValue, setPfValue] = useState(0); // State to store calculated PF value
   const [professionalTax, setProfessionalTax] = useState(0); // State for Professional Tax
 
+
+
+    // Function to check JWT token validity
+    const checkJWTToken = () => {
+      const token = localStorage.getItem('access');
+      if (!token) {
+        navigate('/login');
+        return;
+      }
+  
+      try {
+        const decodedToken = jwtDecode(token);
+        const currentTime = Date.now() / 1000;
+        if (decodedToken.exp < currentTime) {
+          // Token expired, redirect to login
+          localStorage.removeItem('access');
+          navigate('/login');
+        }
+      } catch (error) {
+        console.error('Error decoding token:', error);
+        navigate('/login');
+      }
+    };
+  
+    useEffect(() => {
+      checkJWTToken();
+    }, []);
+
   // Fetch payroll settings on component mount
   useEffect(() => {
+    // Check if the JWT token is valid before fetching compensation settings
+  checkJWTToken();
     const fetchCompensationSettings = async () => {
       try {
         const companyId = localStorage.getItem('companyId');
@@ -50,7 +69,13 @@ const EmployeeSetup = () => {
           return;
         }
 
-        const response = await axios.get(`http://localhost:8000/payroll-settings/${companyId}/`);
+        const response = await axios.get(`http://localhost:8000/payroll-settings/${companyId}/`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('access')}`, // Pass the token in the header
+          },
+        });
+
+        // const response = await axios.get(`http://localhost:8000/payroll-settings/${companyId}/`);
         console.log('Fetched Payroll Settings:', response.data); // Debug: Check if data is fetched
         setPayrollSettings(response.data); // Store the fetched settings
       } catch (error) {
@@ -85,82 +110,6 @@ const EmployeeSetup = () => {
       },
     }));
   };
-
-
-  // // Handle Gross Pay input and calculate Basic, DA, and HRA dynamically
-  // const handleGrossPayChange = (e) => {
-  //   const value = parseFloat(e.target.value) || 0;
-  //   setGrossPay(value);
-
-  //   if (payrollSettings) {
-  //     const basic = (payrollSettings.basic_percentage / 100) * value;
-  //     const da = (payrollSettings.da_percentage / 100) * value;
-  //     const hra = (payrollSettings.hra_percentage / 100) * value;
-
-  //     // Update form fields dynamically
-  //     form.setFieldsValue({
-  //       salary_details: {
-  //         BasicpayAMT: basic.toFixed(2),
-  //         DAPayAMT: da.toFixed(2),
-  //         HRApayAMT: hra.toFixed(2),
-  //       },
-  //     });
-  //   }
-  // };
-
-  // // Handle changes to Basic Pay
-  // const handleBasicPayChange = (e) => {
-  //   const value = parseFloat(e.target.value) || 0;
-  //   const gross = (value / (payrollSettings.basic_percentage / 100)).toFixed(2);
-  //   setGrossPay(gross);
-  //   form.setFieldsValue({
-  //     salary_details: {
-  //       BasicpayAMT: value.toFixed(2),
-  //     },
-  //   });
-  // };
-
-  // // Handle changes to DA Pay
-  // const handleDaPayChange = (e) => {
-  //   const value = parseFloat(e.target.value) || 0;
-  //   const gross = (value / (payrollSettings.da_percentage / 100)).toFixed(2);
-  //   setGrossPay(gross);
-  //   form.setFieldsValue({
-  //     salary_details: {
-  //       DAPayAMT: value.toFixed(2),
-  //     },
-  //   });
-  // };
-
-  // // Handle changes to HRA Pay
-  // const handleHraPayChange = (e) => {
-  //   const value = parseFloat(e.target.value) || 0;
-  //   const gross = (value / (payrollSettings.hra_percentage / 100)).toFixed(2);
-  //   setGrossPay(gross);
-  //   form.setFieldsValue({
-  //     salary_details: {
-  //       HRApayAMT: value.toFixed(2),
-  //     },
-  //   });
-  // };
-
-
-
-
-  // const fetchCompensationSettings = async () => {
-  //   try {
-  //     const companyId = localStorage.getItem('companyId');
-  //     if (!companyId) {
-  //       console.error('Company ID not found');
-  //       return;
-  //     }
-
-  //     const response = await axios.get(`http://localhost:8000/payroll-settings/${companyId}/`);
-  //     setPayrollSettings(response.data);  // Store the payroll settings in state
-  //   } catch (error) {
-  //     console.error('Error fetching payroll settings:', error);
-  //   }
-  // };
 
   // Handle Gross Pay input and calculate Basic, DA, and HRA dynamically
   const handleGrossPayChange = (e) => {
@@ -361,6 +310,8 @@ const EmployeeSetup = () => {
 
   const handleSubmit = async () => {
     try {
+      // Check if the JWT token is valid before submitting the form
+    checkJWTToken();
       // Get the company_id from localStorage
       const company_id = localStorage.getItem('companyId');
       if (!company_id) {
@@ -415,11 +366,7 @@ const EmployeeSetup = () => {
         child2DOB: values.insurance_details.child2DOB
           ? dayjs(values.insurance_details.child2DOB).format('YYYY-MM-DD')
           : null,
-          // fathersDOB: values.insurance_details.fathersDOB ? moment(values.insurance_details.fathersDOB).format('YYYY-MM-DD') : null,
-          // mothersDOB: values.insurance_details.mothersDOB ? moment(values.insurance_details.mothersDOB).format('YYYY-MM-DD') : null,
-          // spouseDOB: values.insurance_details.spouseDOB ? moment(values.insurance_details.spouseDOB).format('YYYY-MM-DD') : null,
-          // child1DOB: values.insurance_details.child1DOB ? moment(values.insurance_details.child1DOB).format('YYYY-MM-DD') : null,
-          // child2DOB: values.insurance_details.child2DOB ? moment(values.insurance_details.child2DOB).format('YYYY-MM-DD') : null,
+         
         },
         salary_details: {
           ...values.salary_details,
@@ -434,7 +381,15 @@ const EmployeeSetup = () => {
       );
 
       // Make the API request to save employee data
-      await axios.post('http://localhost:8000/api/employee/', formattedValues);
+      // await axios.post('http://localhost:8000/api/employee/', formattedValues);
+
+
+      // Make the API request to save employee data
+    await axios.post('http://localhost:8000/api/employee/', formattedValues, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('access')}`, // Pass the token in the header
+      },
+    });
 
       message.success('Employee details submitted successfully');
       form.resetFields(); // Optionally reset the form fields after submission

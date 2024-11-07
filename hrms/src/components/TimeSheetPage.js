@@ -9,6 +9,8 @@ import StepLabel from '@mui/material/StepLabel';
 import Button from '@mui/material/Button';
 import Navbar from './Navbar';
 import axios from 'axios';
+import { jwtDecode } from 'jwt-decode'; 
+
 
 const steps = [
   'Download Excel Template',
@@ -63,6 +65,9 @@ const isValidDays = (month, noOfDays) => {
   // Ensure noOfDays is treated as a number
   return Number(noOfDays) === monthDays[month];
 };
+
+
+
 
 const TimeSheetPage = () => {
   const [downloadedFileName, setDownloadedFileName] = useState('');
@@ -139,24 +144,6 @@ const TimeSheetPage = () => {
     }
   };
 
-
-  // Fetch attendance data (Timesheets)
-  
-  // const fetchTimesheets = async () => {
-  //   const companyId = localStorage.getItem('companyId');
-  //   console.log('Fetching timesheets for company ID:', companyId);
-
-  //   try {
-  //     const response = await axios.get(
-  //       `http://127.0.0.1:8000/timesheet-view/${companyId}/`
-  //     );
-  //     console.log('Fetched Timesheets:', response.data.Attendance_data);
-  //     setTimesheets(response.data.Attendance_data);
-  //   } catch (error) {
-  //     console.error('Error fetching timesheets:', error);
-  //   }
-  // };  
-
   const fetchTimesheets = async () => {
     const companyId = localStorage.getItem('companyId');
     const month = localStorage.getItem('month'); // Retrieve the month from local storage
@@ -164,9 +151,16 @@ const TimeSheetPage = () => {
     console.log('Fetching timesheets for company ID:', companyId, 'and month:', month);
 
     try {
-        const response = await axios.get(
-            `http://127.0.0.1:8000/timesheet-view/${companyId}/${month}/`
-        );
+      // Check if the JWT token is valid before fetching compensation settings
+      checkJWTToken();
+      const response = await axios.get(`http://127.0.0.1:8000/timesheet-view/${companyId}/${month}/`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('access')}`, // Pass the token in the header
+        },
+      });
+        // const response = await axios.get(
+        //     `http://127.0.0.1:8000/timesheet-view/${companyId}/${month}/`
+        // );
         console.log('Fetched Timesheets:', response.data.Attendance_data);
         setTimesheets(response.data.Attendance_data);
     } catch (error) {
@@ -180,13 +174,19 @@ const TimeSheetPage = () => {
   
     const fetchCompensationSettings = async () => {
       try {
+         // Check if the JWT token is valid before fetching compensation settings
+         checkJWTToken();
         const companyId = localStorage.getItem('companyId');
         if (!companyId) {
           console.error('Company ID not found');
           return;
         }
-
-        const response = await axios.get(`http://localhost:8000/payroll-settings/${companyId}/`);
+        const response = await axios.get(`http://localhost:8000/payroll-settings/${companyId}/`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('access')}`, // Pass the token in the header
+          },
+        });
+        // const response = await axios.get(`http://localhost:8000/payroll-settings/${companyId}/`);
         console.log('Fetched Payroll Settings:', response.data); // Debug: Check if data is fetched
         setPayrollSettings(response.data); // Store the fetched settings
       } catch (error) {
@@ -198,14 +198,19 @@ const TimeSheetPage = () => {
       fetchCompensationSettings();
     }, []);
 
-  // useEffect(() => {
-  //   fetchTimesheets();
-  // }, []);
+
 
   const fetchEmployeeData = async () => {
     const companyId = localStorage.getItem('companyId');
     try {
-      const response = await fetch(`http://localhost:8000/api/employee/work-details/?company_id=${companyId}`);
+      // Check if the JWT token is valid before fetching compensation settings
+      checkJWTToken();
+      const response = await axios.get(`http://localhost:8000/api/employee/work-details/?company_id=${companyId}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('access')}`, // Pass the token in the header
+        },
+      });
+      // const response = await fetch(`http://localhost:8000/api/employee/work-details/?company_id=${companyId}`);
   
       if (!response.ok) {
         console.error('Failed to fetch employee data:', response.statusText);
@@ -347,7 +352,30 @@ const TimeSheetPage = () => {
   //     setCalculatedData(result.filter(Boolean)); // Filter out any null entries
   //   }
   // }, [timesheets, employeeData, payrollSettings]);
-
+  const checkJWTToken = () => {
+    const token = localStorage.getItem('access');
+    if (!token) {
+      navigate('/login');
+      return;
+    }
+  
+    try {
+      const decodedToken = jwtDecode(token);
+      const currentTime = Date.now() / 1000;
+      if (decodedToken.exp < currentTime) {
+        // Token expired, redirect to login
+        localStorage.removeItem('access');
+        navigate('/login');
+      }
+    } catch (error) {
+      console.error('Error decoding token:', error);
+      navigate('/login');
+    }
+  };
+  
+  useEffect(() => {
+    checkJWTToken();
+  }, []);
 
   const calculateEEPF = (basic, payrollSettings) => {
     let eePF = 0;
@@ -722,12 +750,6 @@ const TimeSheetPage = () => {
         isEmpNameValid,
 
       };
-    // }).filter(validation => 
-    //   !validation.isDaysValid || 
-    //   !validation.isAttendanceValid || 
-    //   !validation.isAttendanceLopValid || 
-    //   !validation.isEmpIdValid
-    // );
   
     }).filter((validation) => !validation.isDaysValid || !validation.isAttendanceValid || !validation.isAttendanceLopValid || !validation.isEmpIdValid|| 
     !validation.isEmpNameValid);
@@ -765,17 +787,6 @@ const TimeSheetPage = () => {
       return;
     }
   
-    // // Add company_id to each timesheet entry before uploading
-    // const updatedTimeSheetData = timeSheetData.map(entry => ({
-    //   ...entry,
-    //   month: formatMonthToMMYYYY(entry.month),
-    //   company: companyId, // Attach companyId to each entry
-
-    // // const updatedTimeSheetData = timeSheetData.map((entry) => ({
-    // //   ...entry,
-    // //   company: companyId,  
-    // }));
-
     console.log("Original Month Data:", timeSheetData); // Log the original data
 
     const updatedTimeSheetData = timeSheetData.map(entry => {
@@ -865,11 +876,23 @@ const TimeSheetPage = () => {
   // };
   const savePayData = async () => {
     try {
+       // Check if the JWT token is valid before fetching compensation settings
+       checkJWTToken();
       for (const entry of calculatedData) {
         const response = await axios.post(
-          'http://127.0.0.1:8000/api/save-pay-data/', 
-          entry // Send each entry separately
+          'http://127.0.0.1:8000/api/save-pay-data/',
+          entry, // The data you want to send in the POST request
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem('access')}`, // Pass the token in the header
+            },
+          }
         );
+        
+        // const response = await axios.post(
+        //   'http://127.0.0.1:8000/api/save-pay-data/', 
+        //   entry 
+        // );
         console.log('Data saved successfully:', response.data);
       }
       setSuccessMessage('Pay data saved successfully!');

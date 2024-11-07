@@ -6,7 +6,7 @@ import Home from './components/Home';
 // import HomePage from './components/HomePage';
 import CompanySetup from './components/CompanySetup';
 import EmployeeSetup from './components/EmployeeSetup';
-import PayroleSetup from './components/PayroleSetup';
+// import PayroleSetup from './components/PayroleSetup';
 import EmployeeList from './components/EmployeeList';
 import TimeSheetPage from './components/TimeSheetPage';
 import PaySlipValidation from './components/PaySlipValidation';
@@ -33,7 +33,7 @@ function App() {
           <Route path="/home" element={<Home/>} />
           <Route path="/companysetup" element={<CompanySetup />} />
           <Route path="/employeesetup" element={<EmployeeSetup />} />
-          <Route path="/payrolesetup" element={<PayroleSetup />} />
+          {/* <Route path="/payrolesetup" element={<PayroleSetup />} /> */}
           <Route path="/employeelist" element={<EmployeeList />} />
           <Route path="/EmployeeSetupGrid" element={<EmployeeSetupGrid />} /> 
           <Route path="/Attendance" element={<TimeSheetPage />} />

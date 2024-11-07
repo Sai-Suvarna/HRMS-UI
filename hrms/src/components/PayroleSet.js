@@ -4,6 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import Navbar from './Navbar'; 
 import './PayroleSet.css'; 
 import axios from 'axios';
+import { jwtDecode } from 'jwt-decode'; 
+
 
 const EmployeeCompensationForm = () => {
   const [formData, setFormData] = useState({
@@ -77,6 +79,31 @@ const EmployeeCompensationForm = () => {
       
         return deductions;
     }, [totals.totalEarnings]);
+
+    const checkJWTToken = () => {
+      const token = localStorage.getItem('access');
+      if (!token) {
+        navigate('/login');
+        return;
+      }
+    
+      try {
+        const decodedToken = jwtDecode(token);
+        const currentTime = Date.now() / 1000;
+        if (decodedToken.exp < currentTime) {
+          // Token expired, redirect to login
+          localStorage.removeItem('access');
+          navigate('/login');
+        }
+      } catch (error) {
+        console.error('Error decoding token:', error);
+        navigate('/login');
+      }
+    };
+    
+    useEffect(() => {
+      checkJWTToken();
+    }, []);
      
     useEffect(() => {
         const grossPay = 36000;
@@ -226,12 +253,15 @@ const EmployeeCompensationForm = () => {
     
 
         try {
-        // const response = await axios.post('http://localhost:8000/api/payroledetails/', {
-        //     ...formData,
-        //     company: companyId,  // Include companyId in the data
-        // });
+         // Check if the JWT token is valid before fetching compensation settings
+        checkJWTToken();
         // Send the data to the API
-        const response = await axios.post('http://localhost:8000/api/payroledetails/', dataToSubmit);
+        const response = await axios.get(`http://localhost:8000/api/payroledetails/`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('access')}`, // Pass the token in the header
+          },
+        });
+        // const response = await axios.post('http://localhost:8000/api/payroledetails/', dataToSubmit);
         if (response.status === 201) {
             // Handle success
             console.log('Data successfully submitted:', response.data);

@@ -118,7 +118,9 @@ const LoginForm = () => {
             if (!response.data.is_company_setup_complete) {
                 navigate('/companysetup');  // If company setup is incomplete, redirect to setup
             } else if (!response.data.is_payroll_setup_complete) {
-                navigate('/payrolesetup');  // If payroll setup is incomplete, redirect to payroll setup
+                // navigate('/payrolesetup');  
+                navigate('/payroleset');  
+
             } else {
                 navigate('/Home');  // If both are complete, go to employee list
             }

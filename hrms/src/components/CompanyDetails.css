@@ -6,7 +6,6 @@
   border: 1px solid #ccc;  /* Light grey border */
   border-radius: 8px;      /* Rounded corners */
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Shadow for depth */
-  /* position: relative;        */
   margin-top: 1%;
   }
   
@@ -14,13 +13,9 @@
     margin-top: 20px; /* Adjust spacing as needed */
     display: flex;
     flex-direction: column; /* Stack fields vertically */
-    /* position: relative; */
   }
   
   .edit-icon {
-    /* position: absolute; */
-    /* top: 0px;
-    right: 10px; */
     margin-left: 10px; /* Space between the heading and icon */
     cursor: pointer;
     color: #060707; /* Change color as needed */
@@ -33,7 +28,6 @@
   
   .field-container {
     display: flex; /* Use flex for horizontal alignment */
-    /* justify-content: space-between;  */
     padding: 7px 0px; /* Add vertical spacing between fields */
   }
   
@@ -49,7 +43,6 @@
   .field-value {
     flex: 1; /* Allow values to take the remaining space */
     text-align: left; /* Align text to the right */
-    /* padding-left: 3%;   */
   }
 
   .input-field {
@@ -64,4 +57,30 @@
     box-sizing: border-box; 
     background: #000;
   }
+
+  .button-container {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+    flex-direction: row-reverse;
+  }
+  
+  .save-button, .cancel-button {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    width: 90px
+  }
+  
+  .save-button {
+    background-color: #4CAF50; 
+    color: white;
+  }
+  
+  .cancel-button {
+    background-color: #0f13f5; 
+    color: white;
+  }
+  
   

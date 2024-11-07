@@ -1,7 +1,8 @@
 import React, { useCallback, useState, useEffect } from 'react';
 import axios from 'axios';
 import Navbar from './Navbar'; 
-import './PayroleSetup.css'; 
+// import './PayroleSetup.css'; 
+import './PayroleSet.css';
 import { useNavigate } from 'react-router-dom';
 
 const PayroleSetup = () => {

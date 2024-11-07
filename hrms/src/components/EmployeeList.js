@@ -3,6 +3,8 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
 import Navbar from './Navbar';
+import { jwtDecode } from 'jwt-decode'; 
+
 
 import './EmployeeList.css'; // Ensure this is correctly linked
 
@@ -11,25 +13,45 @@ const EmployeeList = () => {
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
-//   useEffect(() => {
-//     const fetchEmployees = async () => {
-//       try {
-//         const response = await axios.get('http://localhost:8000/api/employee/');
-//         setEmployees(response.data.employees);
-//       } catch (err) {
-//         setError('Error fetching employees');
-//         console.error(err);
-//       }
-//     };
+ // Function to check JWT token validity
+ const checkJWTToken = () => {
+  const token = localStorage.getItem('access');
+  if (!token) {
+    navigate('/login');
+    return;
+  }
 
-//     fetchEmployees();
-//   }, []);
+  try {
+    const decodedToken = jwtDecode(token);
+    const currentTime = Date.now() / 1000;
+    if (decodedToken.exp < currentTime) {
+      // Token expired, redirect to login
+      localStorage.removeItem('access');
+      navigate('/login');
+    }
+  } catch (error) {
+    console.error('Error decoding token:', error);
+    navigate('/login');
+  }
+};
 
 useEffect(() => {
+  checkJWTToken();
+}, []);
+
+useEffect(() => {
+  // Check if the JWT token is valid before fetching compensation settings
+  checkJWTToken();
     const fetchEmployees = async () => {
       try {
         const companyId = localStorage.getItem('companyId');  // Fetch company ID from local storage
-        const response = await axios.get(`http://localhost:8000/api/employee/?company_id=${companyId}`);
+        const response = await axios.get(`http://localhost:8000/api/employee/?company_id=${companyId}`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('access')}`, // Pass the token in the header
+          },
+        });
+       
+        // const response = await axios.get(`http://localhost:8000/api/employee/?company_id=${companyId}`);
         setEmployees(response.data.employees);  // Set the filtered employee list
       } catch (err) {
         setError('Error fetching employees');
