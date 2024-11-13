@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { FaEdit } from 'react-icons/fa'; 
+
 import Navbar from '../pages/Navbar';
 import { jwtDecode } from 'jwt-decode'; 
+
+
+// import './EmployeeList.css';
 import '../styles/EmployeeList.css'
 
 const EmployeeList = () => {
@@ -42,15 +45,15 @@ useEffect(() => {
   checkJWTToken();
     const fetchEmployees = async () => {
       try {
-        const companyId = localStorage.getItem('companyId');  
+        const companyId = localStorage.getItem('companyId');  // Fetch company ID from local storage
         const response = await axios.get(`http://localhost:8000/api/employee/?company_id=${companyId}`, {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem('access')}`, 
+            Authorization: `Bearer ${localStorage.getItem('access')}`, // Pass the token in the header
           },
         });
        
         // const response = await axios.get(`http://localhost:8000/api/employee/?company_id=${companyId}`);
-        setEmployees(response.data.employees);  
+        setEmployees(response.data.employees);  // Set the filtered employee list
       } catch (err) {
         setError('Error fetching employees');
         console.error(err);
@@ -61,25 +64,21 @@ useEffect(() => {
   }, []);
 
   const handleAddNewEmployee = () => {
-    navigate('/employeesetup2'); 
+    navigate('/employeesetup'); // Adjust the path if needed
   };
 
   const handleGridView = () => {
-    navigate('/EmployeeSetupGrid'); 
+    navigate('/EmployeeSetupGrid'); // Adjust the path if needed
   };
 
-  const handleEditEmployee = (employeeData) => {
-    console.log("Data",employeeData);
-    navigate('/employeesetup2', { state: { employeeData } }); 
-  };
-  
+
   if (error) {
     return <div>{error}</div>;
   }
 
   return (
     <div>
-      <Navbar />  
+      <Navbar />  {/* Add Navbar here */}
       <div>
         <h2>Employee List</h2>
         <button onClick={handleAddNewEmployee} className="add-button">
@@ -96,6 +95,7 @@ useEffect(() => {
               <tr>
                 <th>Emp ID</th>
                 <th>Work Details</th>
+             
                 <th>Social Security</th>
                 <th>Personal Details</th>
                 <th>Insurance Details</th>
@@ -106,12 +106,7 @@ useEffect(() => {
               {employees.map((employee) => (
                 <tr key={employee.work_details.wdId}>
 
-                  <td>{employee.work_details.empId}
-                   <FaEdit
-                    style={{ cursor: 'pointer', marginLeft: '10px', fontSize: '20px' }} 
-                    onClick={() => handleEditEmployee(employee)} 
-                  />
-                    </td>
+                  <td>{employee.work_details.empId}</td>
 
                   <td>
                     <div>Name: {employee.work_details.firstName} {employee.work_details.lastName}</div>
@@ -159,6 +154,8 @@ useEffect(() => {
                     <div>Blood Group: {employee.personal_details.bloodGroup}</div>
                     <div>Shirt Size: {employee.personal_details.shirtSize}</div>
                     <div>Location: {employee.personal_details.location}</div>
+
+
                   </td>
                   <td>
                     <div>Father's Name: {employee.insurance_details.fathersName}</div>

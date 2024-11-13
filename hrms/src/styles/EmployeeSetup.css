@@ -65,13 +65,13 @@
 /* EmployeeSetup.css */
 
 .employee-setup {
-  max-width: 1200px; /* Adjust width as needed */
+  width: 80%;
   margin: 0 auto;
   padding: 20px;
 }
 
 .ant-form-item {
-  margin-bottom: 16px; /* Adjust spacing as needed */
+  margin-bottom: 10px; 
 }
 
 .ant-form-item-label {
@@ -86,7 +86,7 @@
 .form-row {
   display: flex;
   flex-wrap: wrap;
-  margin-bottom: 16px;
+  margin-bottom: 10px;
 }
 
 .form-col {
@@ -114,3 +114,5 @@
     padding-right: 0;
   }
 }
+
+

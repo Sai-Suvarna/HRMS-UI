@@ -1,8 +1,9 @@
 import React, { useCallback, useState, useEffect } from 'react';
 import axios from 'axios';
-import Navbar from './Navbar'; 
-// import './PayroleSetup.css'; 
-import './PayroleSet.css';
+import Navbar from '../pages/Navbar'; 
+// import './PayroleSet.css';
+import '../styles/PayroleSet.css'
+
 import { useNavigate } from 'react-router-dom';
 
 const PayroleSetup = () => {
@@ -11,7 +12,6 @@ const PayroleSetup = () => {
     da_enabled: false,
     da_percentage: '0',
     hra_percentage: '20',
-    // advances: false,
     variable_pay: false,
     deductions: false,
     quarterly_allowance: false,
@@ -23,7 +23,6 @@ const PayroleSetup = () => {
     esi_percentage: '',
     pf: false,
     pf_type: '',
-    // voluntary_pf:'',
     voluntary_pf: false,
     reimbursements: []
   });
@@ -62,53 +61,6 @@ const PayroleSetup = () => {
     return deductions;
   }, []);
 
-  // const addReimbursement = () => {
-  //   setFormData((prevData) => ({
-  //     ...prevData,
-  //     reimbursements: [
-  //       ...prevData.reimbursements, 
-  //       { name: `Reimbursement ${prevData.reimbursements.length + 1}`, checked: false }
-  //     ]
-  //   }));
-  // };  
-
-  // const handleReimbursementChange = (index, checked) => {
-  //   const newReimbursements = [...formData.reimbursements];
-  //   newReimbursements[index].checked = checked;
-  //   setFormData({
-  //     ...formData,
-  //     reimbursements: newReimbursements,
-  //   });
-  // };
-
-  // Function to add a new reimbursement when a checkbox is checked
-  // const handleReimbursementCheckbox = (index, checked) => {
-  //   const newReimbursements = [...formData.reimbursements];
-    
-  //   if (checked) {
-  //     // Add a new reimbursement entry
-  //     newReimbursements.push({ name: '', amount: 0 });
-  //   } else {
-  //     // Remove the corresponding reimbursement if unchecked
-  //     newReimbursements.splice(index, 1);
-  //   }
-
-  //   setFormData({
-  //     ...formData,
-  //     reimbursements: newReimbursements,
-  //   });
-  // };
-
-  // // Function to update the name and amount for a specific reimbursement
-  // const handleReimbursementChange = (index, field, value) => {
-  //   const newReimbursements = [...formData.reimbursements];
-  //   newReimbursements[index][field] = value;
-  //   setFormData({
-  //     ...formData,
-  //     reimbursements: newReimbursements,
-  //   });
-  // };
-
   useEffect(() => {
     const grossPay = 36000; 
     const basic = calculateBasic(formData.basic_percentage, grossPay);
@@ -122,17 +74,13 @@ const PayroleSetup = () => {
         eePF = Math.round(basic * 0.12);
       }
     }   
-    // const pf = eePF ;
     
     const variablePay = formData.variable_pay ? 3000 : 0;  
     const quarterlyAllowance = formData.quarterly_allowance ? 2000 : 0;  
     const quarterlyBonus = formData.quarterly_bonus ? 1000 : 0;  
     const annualBonus = formData.annual_bonus ? 5000 : 0;  
-    // const specialAllowance = formData.special_allowances ? 6000 : 0;  
     const specialAllowance = grossPay - (basic + da + hra + variablePay + quarterlyAllowance + quarterlyBonus + annualBonus) ;
     const totalEarnings = basic + da + hra + variablePay + quarterlyAllowance + quarterlyBonus + annualBonus + specialAllowance;
-  
-    
     const totalDeductions = calculateDeductions(formData, basic);
     
     setTotals({
@@ -166,51 +114,6 @@ const PayroleSetup = () => {
     });
   };
 
-  // const handleSubmit = async (e) => {
-  //   e.preventDefault();
-
-  //   try {
-  //     const response = await axios.post('http://localhost:8000/payroledetails/', {
-  //       ...formData,
-  //       company: companyId,  // Include companyId in the data
-  //     });
-  //     if (response.status === 201) {
-  //       // Handle success
-  //       console.log('Data successfully submitted:', response.data);
-  //      // Redirect to EmployeeSetup
-  //         navigate('/employeesetup'); 
-        
-  //     }
-  //   } catch (error) {
-  //     console.error('Error submitting form:', error.response?.data || error.message);
-  //   }
-  // };
-
-  // const handleSubmit = async (e) => {
-  //   e.preventDefault();
-  //   const formData = new FormData();
-  //   try {
-  //     const response = await axios.post('http://localhost:8000/payroledetails/', {
-  //       ...formData,
-  //       company: companyId,
-  //     });
-  
-  //     if (response.status === 201) {
-  //       // Pass selected checkboxes (e.g., advances, variable_pay) to Employee Setup page
-  //       const selectedOptions = {
-  //         advances: formData.advances,
-  //         variable_pay: formData.variable_pay,
-  //         // Add other checkboxes as required...
-  //       };
-  
-  //       // Navigate to Employee Setup and pass selected options via state
-  //       navigate('/employeesetup', { state: { selectedOptions } });
-  //     }
-  //   } catch (error) {
-  //     console.error('Error submitting form:', error.response?.data || error.message);
-  //   }
-  // };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
    
@@ -236,7 +139,6 @@ const PayroleSetup = () => {
       basic_percentage: formData.basic_percentage,
       da_percentage: formData.da_percentage,
       hra_percentage: formData.hra_percentage,
-      // advances: formData.advances,
       variable_pay: formData.variable_pay,
       deductions: formData.deductions,
       quarterly_allowance: formData.quarterly_allowance,

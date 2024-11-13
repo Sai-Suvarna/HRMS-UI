@@ -1,16 +1,17 @@
 import React, { useState, useEffect} from 'react';
 import * as XLSX from 'xlsx';
 import { useNavigate } from 'react-router-dom';
-import './TimeSheetPage.css';
+// import './TimeSheetPage.css';
+import '../styles/TimeSheetPage.css';
+
 import Box from '@mui/material/Box';
 import Stepper from '@mui/material/Stepper';
 import Step from '@mui/material/Step';
 import StepLabel from '@mui/material/StepLabel';
 import Button from '@mui/material/Button';
-import Navbar from './Navbar';
+import Navbar from '../pages/Navbar';
 import axios from 'axios';
 import { jwtDecode } from 'jwt-decode'; 
-
 
 const steps = [
   'Download Excel Template',
@@ -21,7 +22,7 @@ const steps = [
 const formatMonthToMMYYYY = (month) => {
   const [shortMonth, year] = month.split(' ');
   const date = new Date(`${shortMonth} 1, ${year}`);
-  const monthNum = String(date.getMonth() + 1).padStart(2, '0'); // Ensure 2-digit month
+  const monthNum = String(date.getMonth() + 1).padStart(2, '0'); 
   return `${monthNum}-${year}`;
 };
 
@@ -90,13 +91,13 @@ const TimeSheetPage = () => {
   const [payrollSettings, setPayrollSettings] = useState(null);
   const [dynamicHeaders, setDynamicHeaders] = useState([]);
 
-
   const handleNext = () => {
     setActiveStep((prevStep) => prevStep + 1);
   };
   const handleBack = () => {
     setActiveStep((prevStep) => prevStep - 1);
   };
+
   const downloadTemplate = () => {
     // Logic to download template
     const worksheet = XLSX.utils.json_to_sheet([]);
@@ -168,10 +169,6 @@ const TimeSheetPage = () => {
     }
 };
 
-
-
-
-  
     const fetchCompensationSettings = async () => {
       try {
          // Check if the JWT token is valid before fetching compensation settings
@@ -198,14 +195,12 @@ const TimeSheetPage = () => {
       fetchCompensationSettings();
     }, []);
 
-
-
   const fetchEmployeeData = async () => {
     const companyId = localStorage.getItem('companyId');
     try {
       // Check if the JWT token is valid before fetching compensation settings
       checkJWTToken();
-      const response = await axios.get(`http://localhost:8000/api/employee/work-details/?company_id=${companyId}`, {
+      const response = await fetch(`http://localhost:8000/api/employee/work-details/?company_id=${companyId}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('access')}`, // Pass the token in the header
         },
@@ -233,7 +228,6 @@ const TimeSheetPage = () => {
       return []; // Handle fetch errors by returning an empty array
     }
   };  
-    
     
   // Effect to fetch timesheets again when entering Step 3
   useEffect(() => {
@@ -418,8 +412,6 @@ const TimeSheetPage = () => {
             reimbursementDetails.push({ name, amount: reimbursementValue });
         }
 
-  
-  
         if (payrollSettings.da_enabled && !payrollSettings.hra_enabled) {
           // DA enabled, HRA disabled
           const E_Basic = Math.round(CTCpayAMT * basicPercentage);

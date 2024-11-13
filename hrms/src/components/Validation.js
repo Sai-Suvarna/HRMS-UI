@@ -2,8 +2,10 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import './Validation.css';
-import Navbar from './Navbar';
+// import './Validation.css';
+import '../styles/Validation.css';
+
+import Navbar from '../pages/Navbar';
 import { jwtDecode } from 'jwt-decode'; 
 
 import {
@@ -84,27 +86,6 @@ const fetchPayCalculations = async () => {
   }
 };
 
-   
-  // // Fetch unique month values on component mount
-  // useEffect(() => {
-  //   const fetchMonths = async () => {
-  //     const response = await axios.get('http://127.0.0.1:8000/api/paycalculation/unique-months/');
-  //     setMonths(response.data);
-  //   };
-  //   fetchMonths();
-  // }, []);
-
-  // // Fetch data for the selected month
-  // const fetchPayCalculations = async () => {
-  //   try {
-  //     const response = await axios.get(`http://127.0.0.1:8000/api/paycalculation/by-month/`, {
-  //       params: { month: selectedMonth, company_id: companyId },
-  //     });
-  //     setPayCalculations(response.data);
-  //   } catch (error) {
-  //     console.error('Error fetching pay calculations:', error);
-  //   }
-  // };
 
   return (
     <div>
@@ -133,10 +114,13 @@ const fetchPayCalculations = async () => {
         </Button>
 
         {/* Table to display PayCalculation data */}
-        <TableContainer component={Paper} style={{ marginTop: '20px' }}>
-            <Table>
+        {/* <TableContainer component={Paper} style={{ marginTop: '20px'}}> */}
+        <TableContainer component={Paper} style={{ marginTop: '20px', maxHeight: '400px' }}>
+
+            <Table stickyHeader>
             <TableHead>
                 <TableRow>
+                <TableCell>EMP ID</TableCell>
                 <TableCell>Name</TableCell>
                 <TableCell>Month</TableCell>
                 <TableCell>No of Days</TableCell>
@@ -163,6 +147,7 @@ const fetchPayCalculations = async () => {
             <TableBody>
                 {payCalculations.map((row, index) => (
                 <TableRow key={index}>
+                    <TableCell>{row.empId}</TableCell>
                     <TableCell>{row.name}</TableCell>
                     <TableCell>{row.month}</TableCell>
                     <TableCell>{row.no_of_days}</TableCell>

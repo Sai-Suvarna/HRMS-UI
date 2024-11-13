@@ -2,7 +2,9 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import Navbar from './Navbar';
 import { useNavigate } from 'react-router-dom';
-import './RegisterForm.css'; // Updated CSS
+// import './RegisterForm.css'; 
+import '../styles/RegisterForm.css'
+
 
 const RegisterForm = () => {
   const [formData, setFormData] = useState({

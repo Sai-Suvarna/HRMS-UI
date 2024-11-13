@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import Navbar from './Navbar'; 
-import './PayroleSet.css'; 
+import Navbar from '../pages/Navbar'; 
+// import './PayroleSet.css'; 
+import '../styles/PayroleSet.css';
+
 import axios from 'axios';
 import { jwtDecode } from 'jwt-decode'; 
 
@@ -247,33 +249,56 @@ const EmployeeCompensationForm = () => {
           company: companyId,
       };
 
-        // Store data in localStorage
-        // localStorage.setItem('payrollData', JSON.stringify(dataToStore));
-        // console.log('Data stored in localStorage:', dataToStore);
-    
-
-        try {
-         // Check if the JWT token is valid before fetching compensation settings
-        checkJWTToken();
-        // Send the data to the API
-        const response = await axios.get(`http://localhost:8000/api/payroledetails/`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('access')}`, // Pass the token in the header
-          },
-        });
-        // const response = await axios.post('http://localhost:8000/api/payroledetails/', dataToSubmit);
+      try {
+        // Check if the JWT token is valid before fetching compensation settings
+        await checkJWTToken(); // Ensure this function is awaited if it's async
+        
+        // Send the data to the API with the data and headers
+        const response = await axios.post(
+          'http://localhost:8000/api/payroledetails/',
+          dataToSubmit, // Pass the data object as the body
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem('access')}`, // Pass the token in the header
+            },
+          }
+        );
+      
         if (response.status === 201) {
-            // Handle success
-            console.log('Data successfully submitted:', response.data);
-        // Redirect to EmployeeSetup
-            navigate('/employeesetup'); 
-            
+          // Handle success
+          console.log('Data successfully submitted:', response.data);
+          // Redirect to EmployeeSetup
+          navigate('/employeesetup');
         }
-        } catch (error) {
+      } catch (error) {
         console.error('Error submitting form:', error.response?.data || error.message);
-        }finally {
+      } finally {
         setIsSubmitting(false); // Enable the button again
-        }
+      }
+      
+
+        // try {
+        //  // Check if the JWT token is valid before fetching compensation settings
+        // checkJWTToken();
+        // // Send the data to the API
+        // const response = await axios.post(`http://localhost:8000/api/payroledetails/`, {
+        //   headers: {
+        //     Authorization: `Bearer ${localStorage.getItem('access')}`, // Pass the token in the header
+        //   },
+        // });
+        // // const response = await axios.post('http://localhost:8000/api/payroledetails/', dataToSubmit);
+        // if (response.status === 201) {
+        //     // Handle success
+        //     console.log('Data successfully submitted:', response.data);
+        // // Redirect to EmployeeSetup
+        //     navigate('/employeesetup'); 
+            
+        // }
+        // } catch (error) {
+        // console.error('Error submitting form:', error.response?.data || error.message);
+        // }finally {
+        // setIsSubmitting(false); // Enable the button again
+        // }
     };
 
   return (

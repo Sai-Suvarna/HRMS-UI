@@ -6,7 +6,6 @@
     margin-top: 20px;
     margin-left: 20px;
     margin-right: 20px;
-    /* border-radius: 30px; */
   }
   
   .employee-gridtable {
@@ -47,3 +46,6 @@
   .add-button:hover {
     background-color: #45a049;
   }
+
+
+  

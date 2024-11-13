@@ -2,8 +2,10 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import Navbar from './Navbar';
-import './EmployeeSetupGrid.css'; // Ensure this is correctly linked
+import Navbar from '../pages/Navbar';
+// import './EmployeeSetupGrid.css'; 
+import '../styles/EmployeeSetupGrid.css'
+
 import { jwtDecode } from 'jwt-decode'; 
 
 

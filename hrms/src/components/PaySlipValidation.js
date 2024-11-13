@@ -81,8 +81,10 @@
 
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import Navbar from './Navbar'; 
-import './PaySlipValidation.css';
+import Navbar from '../pages/Navbar'; 
+// import './PaySlipValidation.css';
+import '../styles/PaySlipValidation.css';
+
 
 const EmpSalaryDetails = () => {
     const [employeeData, setEmployeeData] = useState([]);

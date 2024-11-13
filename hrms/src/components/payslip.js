@@ -2,7 +2,9 @@ import React from 'react';
 import { Form, Input, Button, Row, Col } from 'antd';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
-import './Payslip.css'; // Create a separate CSS file for styling the payslip
+// import './Payslip.css'; 
+import '../styles/Payslip.css'
+
 
 const Payslip = () => {
   const [form] = Form.useForm();

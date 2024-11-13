@@ -101,8 +101,8 @@
 
 .company-logo {
   width: 80px;
-  max-height: 50px; /* Adjust as needed */
-  margin-right: 10px;
+  max-height: 50px; 
+  /* margin-right: 10px; */
 }
 
 .company-name {

@@ -1,7 +1,9 @@
 // src/pages/HomePage.js
 import React from 'react';
 import Navbar from '../components/Navbar';
-import './HomePage.css';  
+// import './HomePage.css'; 
+import '../styles/HomePage.css';
+
 
 const HomePage = () => {
   return (
