@@ -7,6 +7,8 @@ import axios from 'axios';
 import { jwtDecode } from 'jwt-decode'; // Correct import here
 // import './Navbar.css'; 
 import '../styles/Navbar.css';
+import api from "../api";
+
 
 
 const Navbar = () => {
@@ -14,44 +16,72 @@ const Navbar = () => {
   const [companyLogo, setCompanyLogo] = useState('/default-company-logo.png'); 
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const companyId = localStorage.getItem('companyId');
+  // useEffect(() => {
+  //   const companyId = localStorage.getItem('companyId');
 
-    if (!companyId) {
-      console.error('Company ID not found');
-      return;
-    }
+  //   if (!companyId) {
+  //     console.error('Company ID not found');
+  //     return;
+  //   }
 
-    const token = localStorage.getItem('access');
+  //   // const token = localStorage.getItem('access');
 
-    if (token) {
-      const decodedToken = jwtDecode(token);
-      const currentTime = Date.now() / 1000;
+  //   // if (token) {
+  //   //   const decodedToken = jwtDecode(token);
+  //   //   const currentTime = Date.now() / 1000;
       
-      // Check if the token is expired
-      if (decodedToken.exp < currentTime) {
-        console.error('Token has expired');
-        localStorage.clear(); // Clear expired token
-        navigate('/login');
-      }
-    }
+  //   //   // Check if the token is expired
+  //   //   if (decodedToken.exp < currentTime) {
+  //   //     console.error('Token has expired');
+  //   //     localStorage.clear(); // Clear expired token
+  //   //     navigate('/login');
+  //   //   }
+  //   // }
 
-    axios
-      .get(`http://localhost:8000/api/companydetails/retrieve/${companyId}/`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
+  //   // axios
+  //   //   .get(`http://localhost:8000/api/companydetails/retrieve/${companyId}/`, {
+  //   //     headers: {
+  //   //       'Authorization': `Bearer ${token}`
+  //   //     }
+  //   //   })
+  //      axios
+  //     .get(`http://localhost:8000/api/companydetails/retrieve/${companyId}/`)
+  //     .then(response => {
+  //       const companyDetails = response.data;
+  //       setCompanyName(companyDetails.companyName || 'Default Company');
+  //       if (companyDetails.logo_url) {
+  //         setCompanyLogo(`http://localhost:8000${companyDetails.logo_url}`);
+  //       }
+  //     })
+  //     .catch(error => {
+  //       console.error('Error fetching company details:', error);
+  //     });
+  // }, [navigate]);
+
+  useEffect(() => {
+    const fetchCompanyDetails = async () => {
+      try {
+        const companyId = localStorage.getItem('companyId');
+
+        if (!companyId) {
+          console.error('Company ID not found');
+          return;
         }
-      })
-      .then(response => {
+
+        // Fetch company details using async/await
+        const response = await api.get(`/api/companydetails/retrieve/${companyId}/`);
+
         const companyDetails = response.data;
         setCompanyName(companyDetails.companyName || 'Default Company');
         if (companyDetails.logo_url) {
           setCompanyLogo(`http://localhost:8000${companyDetails.logo_url}`);
         }
-      })
-      .catch(error => {
+      } catch (error) {
         console.error('Error fetching company details:', error);
-      });
+      }
+    };
+
+    fetchCompanyDetails();
   }, [navigate]);
 
   const handleLogout = () => {

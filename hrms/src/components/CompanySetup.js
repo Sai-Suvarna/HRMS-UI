@@ -1,21 +1,17 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import React, { useState } from 'react';
 import Navbar from '../pages/Navbar'; 
-// import './CompanySetup.css'; 
 import '../styles/CompanySetup.css'
-
 import { useNavigate } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Stepper from '@mui/material/Stepper';
 import Step from '@mui/material/Step';
 import StepLabel from '@mui/material/StepLabel';
 import Button from '@mui/material/Button';
-import { jwtDecode } from 'jwt-decode'; 
+import api from "../api";
 
 const steps = ['Admin Info', 'Company Info', 'Organizational Rules'];
 
 const CompanySetup = () => {
-  const [step, setStep] = useState(1);
   const [formValues, setFormValues] = useState({
     adminName: '',
     adminEmail: '',
@@ -36,32 +32,6 @@ const CompanySetup = () => {
   const navigate = useNavigate();
   const [activeStep, setActiveStep] = useState(0);
   const [errors, setErrors] = useState({});
-
-  // Function to check JWT token validity
-  const checkJWTToken = () => {
-    const token = localStorage.getItem('access');
-    if (!token) {
-      navigate('/login');
-      return;
-    }
-
-    try {
-      const decodedToken = jwtDecode(token);
-      const currentTime = Date.now() / 1000;
-      if (decodedToken.exp < currentTime) {
-        // Token expired, redirect to login
-        localStorage.removeItem('access');
-        navigate('/login');
-      }
-    } catch (error) {
-      console.error('Error decoding token:', error);
-      navigate('/login');
-    }
-  };
-
-  useEffect(() => {
-    checkJWTToken();
-  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -145,15 +115,18 @@ const CompanySetup = () => {
         return;
     }
     formData.append('user_id', userId);  // Add user_id to form data
+    
+    const url = '/api/companydetails/'; // Endpoint path
+
     try {
-        const response = await axios.post('http://localhost:8000/api/companydetails/', formData, {
-            headers: {
-                'Content-Type': 'multipart/form-data',
-                'Authorization': `Bearer ${localStorage.getItem('access')}`,
-                
-            },
-        });
-        
+      const response = await api.post(url, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        },
+      });
+
+      console.log('Company details submitted:', response.data);
+
         if (response.status === 201) {
             setMessage('Successfully submitted');
             const companyId = response.data.companyId;
@@ -180,18 +153,15 @@ const CompanySetup = () => {
   const updateCompletionStatus = async () => {
     const userId = localStorage.getItem('userId');  // Retrieve the user ID
     const companyId = localStorage.getItem('companyId');  // Ensure companyId is retrieved
-  
+    const url1 = `/api/company-status/${userId}/`;
     try {
-        await axios.patch(`http://localhost:8000/api/company-status/${userId}/`, {
-            company_id: companyId,  // Ensure this is sent
-            is_company_setup_complete: true,
-            role: "admin",
-            is_admin: true
-        }, {
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('access')}`,
-            },
-        });
+      await api.patch(url1, {
+        company_id: companyId,  
+        is_company_setup_complete: true,
+        role: "admin",
+        is_admin: true
+      });
+
     } catch (error) {
         console.error('Error updating completion status', error);
     }
@@ -409,201 +379,6 @@ const CompanySetup = () => {
       </div>
     </div>
   );
-
-  // return (
-  //   <div>
-  //     <Navbar />  {/* Add Navbar here */}
-  //     <h2>Company Setup</h2>
-  //   <div className="company-setup-container">
-
-      
-  //     {step === 1 && (
-  //       <div className="company-form-container">
-  //         <h3>Admin Info</h3>
-  //         <div className="form-group">
-  //           <label>Admin Name:</label>
-  //           <input
-  //             type="text"
-  //             name="adminName"
-  //             value={formValues.adminName}
-  //             onChange={handleChange}
-  //             required
-  //           />
-  //           {errors.adminName && <span className="error">{errors.adminName}</span>}
-  //         </div>
-  //         <div className="form-group">
-  //           <label>Admin Email:</label>
-  //           <input
-  //             type="email"
-  //             name="adminEmail"
-  //             value={formValues.adminEmail}
-  //             onChange={handleChange}
-  //             required
-  //           />
-  //             {errors.adminEmail && <span className="error">{errors.adminEmail}</span>}
-  //         </div>
-  //         <div className="form-group">
-  //           <label>Admin Phone Number:</label>
-  //           <input
-  //             type="text"
-  //             name="adminPhoneNum"
-  //             value={formValues.adminPhoneNum}
-  //             onChange={handleChange}
-  //             required
-  //           />
-  //             {errors.adminPhoneNum && <span className="error">{errors.adminPhoneNum}</span>}
-  //         </div>
-  //         <button onClick={handleNext}>Next</button>
-  //       </div>
-  //     )}
-
-  //     {step === 2 && (
-  //       <div className="company-form-container">
-  //         <h3>Company Info</h3>
-  //         {/* <div className="form-row"> */}
-
-  //         <div className="form-group">
-
-  //           <label>Company Name:</label>
-  //           <input
-  //             type="text"
-  //             name="companyName"
-  //             value={formValues.companyName}
-  //             onChange={handleChange}
-  //             required
-  //           />
-  //             {errors.companyName && <span className="error">{errors.companyName}</span>}
-  //         </div>
-  //         <div className="form-group">
-  //           <label>Company Registered ID:</label>
-  //           <input
-  //             type="text"
-  //             name="companyRegisteredId"
-  //             value={formValues.companyRegisteredId}
-  //             onChange={handleChange}
-  //             required
-  //           />
-  //             {errors.companyRegisteredId && <span className="error">{errors.companyRegisteredId}</span>}
-  //         </div>
-  //         {/* </div> */}
-  //         {/* <div className="form-row"> */}
-
-  //         <div className="form-group">
-  //           <label>PAN:</label>
-  //           <input
-  //             type="text"
-  //             name="pan"
-  //             value={formValues.pan}
-  //             onChange={handleChange}
-  //             required
-  //           />
-  //             {errors.pan && <span className="error">{errors.pan}</span>}
-  //         </div>
-  //         <div className="form-group">
-  //           <label>TAN:</label>
-  //           <input
-  //             type="text"
-  //             name="tan"
-  //             value={formValues.tan}
-  //             onChange={handleChange}
-  //             required
-  //           />
-  //            {errors.tan && <span className="error">{errors.tan}</span>}
-  //         </div>
-  //         <div className="form-group">
-  //           <label>GST:</label>
-  //           <input
-  //             type="text"
-  //             name="gst"
-  //             value={formValues.gst}
-  //             onChange={handleChange}
-  //             required
-  //           />
-  //             {errors.gst && <span className="error">{errors.gst}</span>}
-  //         </div>
-  //         {/* </div> */}
-  //         {/* <div className="form-row"> */}
-
-  //         <div className="form-group">
-  //           <label>Company Address:</label>
-  //           <textarea
-  //             name="address"
-  //             value={formValues.address}
-  //             onChange={handleChange}
-  //             required
-  //           />
-  //             {errors.address && <span className="error">{errors.address}</span>}
-  //         </div>
-  //         {/* </div> */}
-  //         {/* <div className="form-row"> */}
-
-  //         <div className="form-group">
-  //           <label>COI:</label>
-  //           <input
-  //             type="file"
-  //             name="coi"
-  //             onChange={handleFileChange}
-  //           />
-  //            {errors.coi && <span className="error">{errors.coi}</span>}
-  //         </div>
-  //         <div className="form-group">
-  //           <label>Logo:</label>
-  //           <input
-  //             type="file"
-  //             name="logo"
-  //             onChange={handleFileChange}
-  //           />
-  //             {errors.logo && <span className="error">{errors.logo}</span>}
-  //         </div>
-  //         {/* </div> */}
-  //         <button onClick={handleBack}>Back</button>
-  //         <button onClick={handleNext}>Next</button>
-  //       </div>
-  //     )}
-
-  //     {step === 3 && (
-  //       <div className="company-form-container">
-  //         <h3>Organizational Rules</h3>
-  //         <div className="form-group">
-  //           <label>Leave Policy:</label>
-  //           <input
-  //             type="file"
-  //             name="leavePolicy"
-  //             onChange={handleFileChange}
-  //             required
-  //           />
-  //             {errors.leavePolicy && <span className="error">{errors.leavePolicy}</span>}
-  //         </div>
-  //         <div className="form-group">
-  //           <label>PF Policy:</label>
-  //           <input
-  //             type="file"
-  //             name="pfPolicy"
-  //             onChange={handleFileChange}
-  //             required
-  //           />
-  //             {errors.pfPolicy && <span className="error">{errors.pfPolicy}</span>}
-  //         </div>
-  //         <div className="form-group">
-  //           <label>Labour Law Licence:</label>
-  //           <input
-  //             type="file"
-  //             name="labourLawLicence"
-  //             onChange={handleFileChange}
-  //             required
-  //           />
-  //             {errors.labourLawLicence && <span className="error">{errors.labourLawLicence}</span>}
-  //         </div>
-  //         <button onClick={handleBack}>Back</button>
-  //         <button onClick={handleSubmit}>Submit</button>
-  //         {message && <p>{message}</p>}
-  //       </div>
-  //     )}
-       
-  //   </div>
-  //   </div>
-  // );
-
 };
 
 export default CompanySetup;

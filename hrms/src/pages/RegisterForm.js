@@ -4,6 +4,8 @@ import Navbar from './Navbar';
 import { useNavigate } from 'react-router-dom';
 // import './RegisterForm.css'; 
 import '../styles/RegisterForm.css'
+import api from "../api";
+
 
 
 const RegisterForm = () => {
@@ -65,7 +67,12 @@ const RegisterForm = () => {
     }
 
     try {
-      const response = await axios.post('http://localhost:8000/api/register/', formData); // Update URL
+      const response = await api.post('/api/register/', formData, {
+        headers: {
+          'Content-Type': 'application/json',  // Ensure the content type is JSON
+        },
+      });
+      // const response = await axios.post('http://localhost:8000/api/register/', formData); // Update URL
       if (response.status === 201) {
         setSuccess(true);
         setError('');

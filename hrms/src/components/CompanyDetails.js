@@ -1,16 +1,10 @@
 
-//working code with authentication without refreshtoken
-
-
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
 import Navbar from '../pages/Navbar';
 import { FaEdit } from 'react-icons/fa'; 
 import '../styles/CompanyDetails.css';
-
-// import './styles/CompanyDetails.css'; 
+import api from "../api";
 import { useNavigate } from 'react-router-dom';
-import { jwtDecode } from 'jwt-decode'; // Import the jwtDecode function
 
 const CompanyDetails = () => {
   const [company, setCompany] = useState(null);
@@ -28,46 +22,15 @@ const CompanyDetails = () => {
   const navigate = useNavigate(); // Hook for navigation
 
   useEffect(() => {
-    // Authentication check
-    const checkAuthentication = () => {
-      const token = localStorage.getItem('access');
-      if (!token) {
-        console.log('No token found');
-        navigate('/login'); // Redirect to login if no token
-        return;
-      }
-
-      try {
-        const decodedToken = jwtDecode(token);
-        const currentTime = Date.now() / 1000; // Get current time in seconds
-        if (decodedToken.exp < currentTime) {
-          console.log('Token expired');
-          localStorage.clear();
-          navigate('/login'); // Redirect to login if token has expired
-        }
-      } catch (error) {
-        console.error('Invalid token', error);
-        localStorage.clear();
-        navigate('/login'); // Redirect to login if token is invalid
-      }
-    };
-
-    checkAuthentication(); // Check for authentication
 
     const companyId = localStorage.getItem('companyId');
     if (!companyId) {
       setError('Company ID not found');
       return;
     }
-
-    axios
-      .get(`http://localhost:8000/api/companydetails/retrieve/${companyId}/`, {
-        // .get(`http://localhost:8000/api/getcompanydetails/`, {
-
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('access')}`
-        }
-      })
+    const url = `/api/companydetails/retrieve/${companyId}/`; 
+    api.get(url)
+  
       .then(response => {
         const updatedData = {
           ...response.data,
@@ -135,14 +98,15 @@ const CompanyDetails = () => {
     if (files.leave_policy) formData.append('leave_policy', files.leave_policy);
     if (files.pf_policy) formData.append('pf_policy', files.pf_policy);
     if (files.labour_law_licence) formData.append('labour_law_licence', files.labour_law_licence);
-  
-    axios
-      .put(`http://localhost:8000/api/companydetails/update/${companyId}/`, formData, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('access')}`,
-          'Content-Type': 'multipart/form-data',
-        },
-      })
+    
+    const url1 = `/api/companydetails/update/${companyId}/`; 
+
+    api.put(url1, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    })
+   
       .then(response => {
         setCompany({
           ...response.data,

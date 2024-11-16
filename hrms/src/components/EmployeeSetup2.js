@@ -1,20 +1,18 @@
 import React, { useState, useEffect  } from 'react';
-import { TextField, Button, MenuItem, Box, FormHelperText } from '@mui/material';
+import { Button, Box } from '@mui/material';
 import Stepper from '@mui/material/Stepper';
 import Step from '@mui/material/Step';
 import StepLabel from '@mui/material/StepLabel';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import Navbar from '../pages/Navbar';
 import '../styles/EmployeeSetup2.css';
-import dayjs from 'dayjs';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { message } from 'antd';
 import { useLocation } from 'react-router-dom';
-import Test from './Test';
 import SocialSecurityDetailsForm from './SocialSecurityDetailsForm';
+import EmployeeWorkDetailsForm from './EmployeeWorkDetailsForm';
+import PersonalDetailsFields from './PersonalDetailsFields'; // Adjust path as needed
+import InsuranceDetailsForm from './InsuranceDetailsForm';
+import api from "../api";
 
 
 const steps = [
@@ -25,7 +23,7 @@ const steps = [
   'Salary Details'
 ];
 
-function EmployeeSetup2({ isEditMode = false}) {
+function EmployeeSetup2() {
   const [activeStep, setActiveStep] = useState(0);
   const [isDataLoaded,setDataload]=useState(false);
 //   const [formData, setFormData] = useState({});
@@ -41,8 +39,12 @@ const [formData, setFormData] = useState({
   const navigate = useNavigate();
   const location = useLocation();
 
-  const employeeData = location.state?.employeeData;
+  // const employeeData = location.state?.employeeData;
+
+  const { employeeData, isEditMode = false } = location.state || {}; // Retrieve from location.state
   console.log("EData:",employeeData);
+  console.log("Edit Mode:",isEditMode);
+
 
   useEffect(() => {
     if ( employeeData) {
@@ -137,9 +139,7 @@ const [formData, setFormData] = useState({
         }
   
         // Date of Joining: Check if filled
-        if (!formData.work_details.dateOfJoining) stepErrors.dateOfJoining = 'Date of Joining is required';
-
-        // Add your form submission logic here
+        // if (!formData.work_details.dateOfJoining) stepErrors.dateOfJoining = 'Date of Joining is required';
         
         break;
         
@@ -194,9 +194,13 @@ const [formData, setFormData] = useState({
         }
         
         // Marriage Date: Optional, must be a valid date if provided
-        if (formData.personal_details.marriageDate && !formData.personal_details.marriageDate.isValid()) {
-            stepErrors.marriageDate = 'Marriage date must be a valid date';
-        }
+        // if (formData.personal_details.marriageDate && !formData.personal_details.marriageDate.isValid()) {
+        //     stepErrors.marriageDate = 'Marriage date must be a valid date';
+        // }
+      //   if (formData.personal_details.marriageDate && 
+      //     !dayjs(formData.personal_details.marriageDate).isValid()) {
+      //   stepErrors.marriageDate = 'Marriage date must be a valid date';
+      // }
         
         // Blood Group: Optional, must be selected if provided
         if (formData.personal_details.bloodGroup && !formData.personal_details.bloodGroup) {
@@ -236,38 +240,55 @@ const [formData, setFormData] = useState({
             stepErrors.fathersName = 'Father Name must contain only letters';
         }
 
-        if (formData.insurance_details.fathersDOB && !formData.insurance_details.fathersDOB.isValid()) {
-            stepErrors.fathersDOB = 'Father DOB must be a valid date';
-        }
+        // if (formData.insurance_details.fathersDOB && !formData.insurance_details.fathersDOB.isValid()) {
+        //     stepErrors.fathersDOB = 'Father DOB must be a valid date';
+        // }
        
         if (formData.insurance_details.mothersName && !/^[A-Za-z\s]+$/.test(formData.insurance_details.mothersName)) {
             stepErrors.mothersName = 'Father Name must contain only letters';
         }
 
-        if (formData.insurance_details.mothersDOB && !formData.insurance_details.mothersDOB.isValid()) {
-            stepErrors.mothersDOB = 'Father DOB must be a valid date';
-        }
+        // if (formData.insurance_details.mothersDOB && !formData.insurance_details.mothersDOB.isValid()) {
+        //     stepErrors.mothersDOB = 'Father DOB must be a valid date';
+        // }
         if (formData.insurance_details.spouseName && !/^[A-Za-z\s]+$/.test(formData.insurance_details.spouseName)) {
             stepErrors.spouseName = 'Father Name must contain only letters';
         }
 
-        if (formData.insurance_details.spouseDOB && !formData.insurance_details.spouseDOB.isValid()) {
-            stepErrors.spouseDOB = 'Father DOB must be a valid date';
-        }
+        // if (formData.insurance_details.spouseDOB && !formData.insurance_details.spouseDOB.isValid()) {
+        //     stepErrors.spouseDOB = 'Father DOB must be a valid date';
+        // }
         if (formData.insurance_details.child1 && !/^[A-Za-z\s]+$/.test(formData.insurance_details.child1)) {
             stepErrors.child1 = 'Father Name must contain only letters';
         }
 
-        if (formData.insurance_details.child1DOB && !formData.insurance_details.child1DOB.isValid()) {
-            stepErrors.child1DOB = 'Father DOB must be a valid date';
-        }
+        // if (formData.insurance_details.child1DOB && !formData.insurance_details.child1DOB.isValid()) {
+        //     stepErrors.child1DOB = 'Father DOB must be a valid date';
+        // }
         if (formData.insurance_details.child2 && !/^[A-Za-z\s]+$/.test(formData.insurance_details.child2)) {
             stepErrors.child2 = 'Father Name must contain only letters';
         }
 
-        if (formData.insurance_details.child2DOB && !formData.insurance_details.child2DOB.isValid()) {
-            stepErrors.child2DOB = 'Father DOB must be a valid date';
-        }
+        // if (formData.insurance_details.child2DOB && !formData.insurance_details.child2DOB.isValid()) {
+        //     stepErrors.child2DOB = 'Father DOB must be a valid date';
+        // }
+
+      //   if (formData.insurance_details.fathersDOB && !dayjs(formData.insurance_details.fathersDOB).isValid()) {
+      //     stepErrors.fathersDOB = 'Father DOB must be a valid date';
+      // }
+      // if (formData.insurance_details.mothersDOB && !dayjs(formData.insurance_details.mothersDOB).isValid()) {
+      //     stepErrors.mothersDOB = 'Mother DOB must be a valid date';
+      // }
+      // if (formData.insurance_details.spouseDOB && !dayjs(formData.insurance_details.spouseDOB).isValid()) {
+      //     stepErrors.spouseDOB = 'Spouse DOB must be a valid date';
+      // }
+      // if (formData.insurance_details.child1DOB && !dayjs(formData.insurance_details.child1DOB).isValid()) {
+      //     stepErrors.child1DOB = 'Child 1 DOB must be a valid date';
+      // }
+      // if (formData.insurance_details.child2DOB && !dayjs(formData.insurance_details.child2DOB).isValid()) {
+      //     stepErrors.child2DOB = 'Child 2 DOB must be a valid date';
+      // }
+      
 
       default:
         break;
@@ -286,6 +307,9 @@ const [formData, setFormData] = useState({
     return `${year}-${month}-${day}`;
   };
   
+
+
+
   const handleSubmit = async () => {
     const company_id = localStorage.getItem('companyId');
     if (!company_id) {
@@ -293,93 +317,70 @@ const [formData, setFormData] = useState({
       message.error('Company ID is required');
       return;
     }
-  
-    // Group form data into respective categories with formatted dates
-    const workDetails = {
-      empId: formData.empId,
-      firstName: formData.firstName,
-      lastName: formData.lastName,
-      employmentStatus: formData.employmentStatus,
-      companyEmailId: formData.companyEmailId,
-      group: formData.group,
-      department: formData.department,
-      roleType: formData.roleType,
-      currentRole: formData.currentRole,
-      reportingManager: formData.reportingManager,
-      previousEmployer: formData.previousEmployer,
-      totalExpBeforeJoining: formData.totalExpBeforeJoining,
-      reasonForLeaving: formData.reasonForLeaving,
-      dateOfJoining: formatDate(formData.dateOfJoining),
-      dateOfRelieving: formatDate(formData.dateOfRelieving),
-      previousDateOfJoining: formatDate(formData.previousDateOfJoining),
-    };
-  
-    const socialSecurityDetails = {
-      panNum: formData.panNum,
-      aadharNum: formData.aadharNum,
-      bankAccountNumber: formData.bankAccountNumber,
-      bankName: formData.bankName,
-      ifscCode: formData.ifscCode,
-      uanNum: formData.uanNum
-    };
-  
-    const personalDetails = {
-      personalEmailId: formData.personalEmailId,
-      dob: formatDate(formData.dob),
-      gender: formData.gender,
-      educationalQualification: formData.educationalQualification,
-      maritalStatus: formData.maritalStatus,
-      marriageDate: formatDate(formData.marriageDate),
-      bloodGroup: formData.bloodGroup,
-      shirtSize: formData.shirtSize,
-      currentAddress: formData.currentAddress,
-      permanentAddress: formData.permanentAddress,
-      generalContact: formData.generalContact,
-      emergencyContact: formData.emergencyContact,
-      relationship: formData.relationship,
-      relationshipName: formData.relationshipName,
-      location: formData.location
-    };
-  
-    const insuranceDetails = {
-      fathersName: formData.fathersName,
-      fathersDOB: formatDate(formData.fathersDOB),
-      mothersName: formData.mothersName,
-      mothersDOB: formatDate(formData.mothersDOB),
-      spouseName: formData.spouseName,
-      spouseDOB: formatDate(formData.spouseDOB),
-      child1: formData.child1,
-      child1DOB: formatDate(formData.child1DOB),
-      child2: formData.child2,
-      child2DOB: formatDate(formData.child2DOB),
-    };
-  
-    const salaryDetails = {
-      salary: formData.salary
-    };
-  
-    const dataToSubmit = {
-      company: company_id,
-      work_details: workDetails,
-      social_security_details: socialSecurityDetails,
-      personal_details: personalDetails,
-      insurance_details: insuranceDetails,
-      salary_details: salaryDetails
-    };
 
-    
+
+  // Format date fields while retaining all other properties
+const insuranceDetails = {
+  ...formData.insurance_details,
+  fathersDOB: formatDate(formData.insurance_details.fathersDOB),
+  mothersDOB: formatDate(formData.insurance_details.mothersDOB),
+  spouseDOB: formatDate(formData.insurance_details.spouseDOB),
+  child1DOB: formatDate(formData.insurance_details.child1DOB),
+  child2DOB: formatDate(formData.insurance_details.child2DOB),
+};
+
+const workDetails = {
+  ...formData.work_details,
+  dateOfJoining: formatDate(formData.work_details.dateOfJoining),
+  dateOfRelieving: formatDate(formData.work_details.dateOfRelieving),
+  previousDateOfJoining: formatDate(formData.work_details.previousDateOfJoining),
+};
+
+const personalDetails = {
+  ...formData.personal_details,
+  dob: formatDate(formData.personal_details.dob),
+  marriageDate: formatDate(formData.personal_details.marriageDate),
+};
+
+// Create data to submit
+const dataToSubmit = {
+  company: company_id,
+  work_details: workDetails,
+  social_security_details: formData.social_security_details,
+  personal_details: personalDetails,
+  insurance_details: insuranceDetails,
+  salary_details: formData.salary_details,  
+};
+  console.log("Submit edit mode:",isEditMode);
+  
+   const id = isEditMode?employeeData.work_details.wdId:"";
+
     try {
-        const url = isEditMode
-          ? `http://localhost:8000/api/employee/${employeeData.id}/`
-          : 'http://localhost:8000/api/employee/';
-        const response = await axios({
-          method: isEditMode ? 'patch' : 'post',
-          url,
-          data: dataToSubmit,
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('access')}`,
-          },
-        });
+      const url = isEditMode ? `/api/employee/${id}/` : '/api/employee/';
+
+        // const url = isEditMode
+        //   ? `http://localhost:8000/api/employee/${id}/`
+        //   : 'http://localhost:8000/api/employee/';
+        console.log("URL",url)
+        // const response = await axios({
+        //   method: isEditMode ? 'patch' : 'post',
+        //   url,
+        //   data: dataToSubmit,
+        //   headers: {
+        //     Authorization: `Bearer ${localStorage.getItem('access')}`,
+        //   },
+        // });
+        const response = isEditMode
+        ? await api.patch(url, dataToSubmit, {
+            // headers: {
+            //   Authorization: `Bearer ${localStorage.getItem('access')}`,
+            // },
+          })
+        : await api.post(url, dataToSubmit, {
+            // headers: {
+            //   Authorization: `Bearer ${localStorage.getItem('access')}`,
+            // },
+          });
         if (response.status === 200 || response.status === 201) {
             message.success(`Employee details ${isEditMode ? 'updated' : 'submitted'} successfully`);
             navigate('/employeelist');
@@ -392,199 +393,17 @@ const [formData, setFormData] = useState({
 
   const renderFormFields = (step) => {
 
-    const check=formData.work_details.empId;
     switch (step) {
       case 0:
         return (
           <div className="employee-setup-form">
-            <TextField
-              label="Employee ID"
-              name="empId"
-              defaultValue={formData.work_details.empId}
-              value={formData.work_details.empId}
-              onChange={(e)=>{handleChange(e,"work_details")}}
-              fullWidth
-              error={!!errors.empId}
-              helperText={errors.empId}
-              required
-                        
-            />
-            <TextField
-              label="First Name"
-              name="firstName"
-              value={formData.work_details.firstName}
-              onChange={(e)=>{handleChange(e,"work_details")}}
-              defaultValue={formData.work_details.firstName}
-              fullWidth
-              error={!!errors.firstName}
-              helperText={errors.firstName}
-              required
-            />
-            <TextField
-              label="Last Name"
-              name="lastName"
-              defaultValue={formData.work_details.lastName}
-              value={formData.work_details.lastName}
-              onChange={(e)=>{handleChange(e,"work_details")}}
-              fullWidth
-              error={!!errors.lastName}
-              helperText={errors.lastName}
-              required
-            />
-            <TextField
-              select
-              label="Employment Status"
-              name="employmentStatus"
-              defaultValue={formData.work_details.employmentStatus}
-              value={formData.work_details.employmentStatus}
-              onChange={(e)=>{handleChange(e,"work_details")}}
-              fullWidth
-              error={!!errors.employmentStatus}
-              helperText={errors.employmentStatus}
-              required>
-                <MenuItem value="active">Active</MenuItem>
-                  <MenuItem value="inactive">Inactive</MenuItem>
-                  <MenuItem value="terminated">Terminated</MenuItem>
-                </TextField>
-          
-            <TextField
-              label="Company Email ID"
-              name="companyEmailId"
-              defaultValue={formData.work_details.companyEmailId}
-              value={formData.work_details.companyEmailId}
-              onChange={(e)=>{handleChange(e,"work_details")}}
-              fullWidth
-              error={!!errors.companyEmailId}
-              helperText={errors.companyEmailId}
-              required
-            />
-            
-            <TextField 
-            label="Group" 
-            name="group" 
-            defaultValue={formData.work_details.group}
-            value={formData.work_details.group}
-            onChange={(e)=>{handleChange(e,"work_details")}}
-            fullWidth
-            error={!!errors.group}
-            helperText={errors.group}
-            />
-
-            <TextField
-              label="Department"
-              name="department"
-              defaultValue={formData.work_details.department}
-              value={formData.work_details.department}
-              onChange={(e)=>{handleChange(e,"work_details")}}
-              fullWidth
-              error={!!errors.department}
-              helperText={errors.department}
-              required
-            />
-             <TextField
-              label="Role Type"
-              name="roleType"
-              defaultValue={formData.work_details.roleType}
-              onChange={(e)=>{handleChange(e,"work_details")}}
-              fullWidth
-              value={formData.work_details.roleType}
-              error={!!errors.roleType}
-              helperText={errors.roleType}
-            />
-            <TextField
-              label="Current Role"
-              name="currentRole"
-              defaultValue={formData.work_details.currentRole}
-              value={formData.work_details.currentRole}
-              onChange={(e)=>{handleChange(e,"work_details")}}
-              fullWidth
-              error={!!errors.currentRole}
-              helperText={errors.currentRole}
-              required
-            />
-            <TextField
-              label="Reporting Manager"
-              name="reportingManager"
-              defaultValue={formData.work_details.reportingManager}
-              value={formData.work_details.reportingManager}
-              onChange={(e)=>{handleChange(e,"work_details")}}
-              fullWidth
-              error={!!errors.reportingManager}
-              helperText={errors.reportingManager}
-              required
-            />
-            <TextField 
-              label="Previous Employer" 
-              name="previousEmployer" 
-              defaultValue={formData.work_details.previousEmployer}
-              value={formData.work_details.previousEmployer}
-              fullWidth
-              error={!!errors.previousEmployer}
-              helperText={errors.previousEmployer} 
-              onChange={(e)=>{handleChange(e,"work_details")}}
-              />
-            <TextField 
-            label="Experience Before Joining" 
-            name="totalExpBeforeJoining" 
-            defaultValue={formData.work_details.totalExpBeforeJoining}
-            value={formData.work_details.totalExpBeforeJoining}
-            error={!!errors.totalExpBeforeJoining}
-            helperText={errors.totalExpBeforeJoining}
-            fullWidth
-            onChange={(e)=>{handleChange(e,"work_details")}}
-            placeholder='Ex: 2 yr 5 mon'
-            />
-            <TextField 
-            label="Reason for Leaving" 
-            name="reasonForLeaving" 
-            value={formData.work_details.reasonForLeaving}
-            error={!!errors.reasonForLeaving}
-            helperText={errors.reasonForLeaving}
-            onChange={(e)=>{handleChange(e,"work_details")}}
-            fullWidth
-            />
-
-            <LocalizationProvider dateAdapter={AdapterDayjs}>
-              <DatePicker
-                label="Date of Joining"
-                value={formData.work_details.dateOfJoining}
-                // defaultValue={formData.work_details.dateOfJoining}
-                onChange={(date) => setFormData((prevFormData) => ({
-                  ...prevFormData,
-                  work_details: { ...prevFormData.work_details, dateOfJoining: date },
-                }))}
-                renderInput={(params) => (
-                  <TextField {...params} fullWidth error={!!errors.dateOfJoining} helperText={errors.dateOfJoining} 
-                  required 
-                  />
-                )}
-              />
-
-              <DatePicker
-                label="Date of Relieving"
-                value={formData.work_details.dateOfRelieving}
-                // defaultValue={formData.work_details.dateOfRelieving}
-                // onChange={(date) => setFormData({ ...formData, dateOfRelieving: date })}
-                onChange={(date) => setFormData((prevFormData) => ({
-                  ...prevFormData,
-                  work_details: { ...prevFormData.work_details, dateOfRelieving: date },
-                }))}
-                renderInput={(params) => <TextField {...params} fullWidth />}
-              />
-              <DatePicker
-                label="Previous Date of Joining"
-                value={formData.work_details.previousDateOfJoining}
-                // defaultValue={formData.work_details.previousDateOfJoining}
-                // onChange={(date) => setFormData({ ...formData, previousDateOfJoining: date })}
-                onChange={(date) => setFormData((prevFormData) => ({
-                  ...prevFormData,
-                  work_details: { ...prevFormData.work_details, previousDateOfJoining: date },
-                }))}
-                renderInput={(params) => <TextField {...params} fullWidth />}
-              />
-            </LocalizationProvider>
-           
-          </div>
+      <EmployeeWorkDetailsForm 
+        formData={formData} 
+        errors={errors} 
+        handleChange={handleChange} 
+        setFormData={setFormData} 
+      />
+    </div>
         );
 
       case 1: // Social Security Details Form
@@ -601,324 +420,28 @@ const [formData, setFormData] = useState({
       case 2: // Personal Details Form
         return (
           <div className="employee-setup-form">
-            <TextField
-              label="Personal Email ID"
-              name="personalEmailId"
-              defaultValue={formData.personal_details.personalEmailId}
-              value={formData.personal_details.personalEmailId }
-              onChange={(e)=>{handleChange(e,"personal_details")}}
-              fullWidth
-              error={!!errors.personalEmailId}
-              helperText={errors.personalEmailId}
-              required
-            />
-            <LocalizationProvider dateAdapter={AdapterDayjs}>
-              <DatePicker
-                label="Date of Birth *"
-                value={formData.personal_details.dob}
-                // defaultValue={formData.personal_details.dob}
-                // onChange={(date) => setFormData({ ...formData, dob: date })}
-                onChange={(date) => setFormData((prevFormData) => ({
-                  ...prevFormData,
-                  personal_details: { ...prevFormData.personal_details, dob: date },
-                }))}
-                renderInput={(params) => <TextField {...params} fullWidth />}
-                error={!!errors.dob}
-                helperText={errors.dob}
-                required
-              />
-            </LocalizationProvider>
-            <TextField
-              select
-              label="Gender"
-              name="gender"
-              defaultValue={formData.personal_details.gender}
-              value={formData.personal_details.gender}
-              onChange={(e)=>{handleChange(e,"personal_details")}}
-              fullWidth
-              error={!!errors.gender}
-              helperText={errors.gender}
-              required
-            >
-              <MenuItem value="Male">Male</MenuItem>
-              <MenuItem value="Female">Female</MenuItem>
-              <MenuItem value="Other">Other</MenuItem>
-            </TextField>
-            <TextField
-              label="Educational Qualification"
-              name="educationalQualification"
-              defaultValue={formData.personal_details.educationalQualification}
-              value={formData.personal_details.educationalQualification}
-              onChange={(e)=>{handleChange(e,"personal_details")}}
-              fullWidth
-              error={!!errors.educationalQualification}
-              helperText={errors.educationalQualification}
-            />
-            <TextField
-              select
-              label="Marital Status"
-              name="maritalStatus"
-              defaultValue={formData.personal_details.maritalStatus}
-              value={formData.personal_details.maritalStatus}
-              onChange={(e)=>{handleChange(e,"personal_details")}}
-              fullWidth
-              error={!!errors.maritalStatus}
-              helperText={errors.maritalStatus}
-              required
-            >
-              <MenuItem value="Single">Single</MenuItem>
-              <MenuItem value="Married">Married</MenuItem>
-              <MenuItem value="Divorced">Divorced</MenuItem>
-              <MenuItem value="Widowed">Widowed</MenuItem>
-            </TextField>
-            <LocalizationProvider dateAdapter={AdapterDayjs}>
-              <DatePicker
-                label="Marriage Date"
-                value={formData.personal_details.marriageDate}
-                // defaultValue={formData.personal_details.marriageDate}
-                // onChange={(date) => setFormData({ ...formData, marriageDate: date })}
-                onChange={(date) => setFormData((prevFormData) => ({
-                  ...prevFormData,
-                  personal_details: { ...prevFormData.personal_details, marriageDate: date },
-                }))}
-                renderInput={(params) => <TextField {...params} fullWidth />}
-                error={!!errors.marriageDate}
-                helperText={errors.marriageDate}
-              />
-            </LocalizationProvider>
-              <TextField
-              select
-              label="Blood Group"
-              name="bloodGroup"
-              defaultValue={formData.personal_details.bloodGroup}
-              value={formData.personal_details.bloodGroup}
-              onChange={(e)=>{handleChange(e,"personal_details")}}
-              fullWidth
-              error={!!errors.bloodGroup}
-              helperText={errors.bloodGroup}
-            >
-              <MenuItem value="A+">A+</MenuItem>
-              <MenuItem value="A-">A-</MenuItem>
-              <MenuItem value="B+">B+</MenuItem>
-              <MenuItem value="B-">B-</MenuItem>
-              <MenuItem value="AB+">AB+</MenuItem>
-              <MenuItem value="AB-">AB-</MenuItem>
-              <MenuItem value="O+">O+</MenuItem>
-              <MenuItem value="O-">O-</MenuItem>
-            </TextField>
-            <TextField
-              label="Shirt Size"
-              name="shirtSize"
-              defaultValue={formData.personal_details.shirtSize}
-              value={formData.personal_details.shirtSize}
-              onChange={(e)=>{handleChange(e,"personal_details")}}
-              fullWidth
-              error={!!errors.shirtSize}
-              helperText={errors.shirtSize}
-            />
-            <TextField
-              label="Current Address"
-              name="currentAddress"
-              defaultValue={formData.personal_details.currentAddress}
-              value={formData.personal_details.currentAddress}
-              onChange={(e)=>{handleChange(e,"personal_details")}}
-              fullWidth
-              error={!!errors.currentAddress}
-              helperText={errors.currentAddress}
-              required
-            />
-            <TextField
-              label="Permanent Address"
-              name="permanentAddress"
-              defaultValue={formData.personal_details.permanentAddress}
-              value={formData.personal_details.permanentAddress}
-              onChange={(e)=>{handleChange(e,"personal_details")}}
-              fullWidth
-              error={!!errors.permanentAddress}
-              helperText={errors.permanentAddress}
-              required
-            />
-            <TextField
-              label="General Contact (10 digits)"
-              name="generalContact"
-              defaultValue={formData.personal_details.generalContact}
-              value={formData.personal_details.generalContact}
-              onChange={(e)=>{handleChange(e,"personal_details")}}
-              fullWidth
-              error={!!errors.generalContact}
-              helperText={errors.generalContact}
-              required
-            />
-            <TextField
-              label="Emergency Contact (10 digits)"
-              name="emergencyContact"
-              defaultValue={formData.personal_details.emergencyContact}
-              value={formData.personal_details.emergencyContact}
-              onChange={(e)=>{handleChange(e,"personal_details")}}
-              fullWidth
-              error={!!errors.emergencyContact}
-              helperText={errors.emergencyContact}
-              required
-            />
-            <TextField
-              select
-              label="Relationship"
-              name="relationship"
-              defaultValue={formData.personal_details.relationship}
-              value={formData.personal_details.relationship}
-              onChange={(e)=>{handleChange(e,"personal_details")}}
-              fullWidth
-              error={!!errors.relationship}
-              helperText={errors.relationship}
-              required
-            >
-              <MenuItem value="Parent">Parent</MenuItem>
-              <MenuItem value="Sibling">Sibling</MenuItem>
-              <MenuItem value="Spouse">Spouse</MenuItem>
-              <MenuItem value="Friend">Friend</MenuItem>
-            </TextField>
-            <TextField
-              label="Relationship Name"
-              name="relationshipName"
-              defaultValue={formData.personal_details.relationshipName}
-              value={formData.personal_details.relationshipName}
-              onChange={(e)=>{handleChange(e,"personal_details")}}
-              fullWidth
-              error={!!errors.relationshipName}
-              helperText={errors.relationshipName}
-              required
-            />
-            <TextField
-              label="Work Location"
-              name="location"
-              defaultValue={formData.personal_details.location}
-              value={formData.personal_details.location || ''}
-              onChange={(e)=>{handleChange(e,"personal_details")}}
-              fullWidth
-              error={!!errors.location}
-              helperText={errors.location}
-              required
-            />
-          </div>
+          <PersonalDetailsFields 
+            formData={formData} 
+            errors={errors} 
+            handleChange={handleChange} 
+            setFormData={setFormData} 
+
+          />
+        </div>
         );
 
       case 3:
         return (
-            <div className="employee-setup-form">
-            <TextField
-                label="Father Name"
-                name="fathersName"
-                defaultValue={formData.insurance_details.fathersName}
-                value={formData.insurance_details.fathersName}
-                onChange={(e)=>{handleChange(e,"personal_details")}}
-                fullWidth
-                error={!!errors.fathersName}
-                helperText={errors.fathersName}
+          <div className='employee-setup-form'>
+            <InsuranceDetailsForm 
+                formData={formData}
+                errors={errors}
+                handleChange={handleChange}
+                setFormData={setFormData}
             />
-            <LocalizationProvider dateAdapter={AdapterDayjs}>
-                <DatePicker
-                label="Father DOB"
-                value={formData.insurance_details.fathersDOB}
-                // defaultValue={formData.insurance_details.fathersDOB}
-                onChange={(date) => setFormData({ ...formData, fathersDOB: date })}
-                renderInput={(params) => (
-                    <TextField {...params} fullWidth error={!!errors.fathersDOB} helperText={errors.fathersDOB} />
-                )}
-                />
-            </LocalizationProvider>
-
-            <TextField
-                label="Mother Name"
-                name="mothersName"
-                defaultValue={formData.insurance_details.mothersName}
-                value={formData.insurance_details.mothersName}
-                onChange={(e)=>{handleChange(e,"personal_details")}}
-                fullWidth
-                error={!!errors.mothersName}
-                helperText={errors.mothersName}
-            />
-           <LocalizationProvider dateAdapter={AdapterDayjs}>
-                <DatePicker
-                label="Mother DOB"
-                value={formData.insurance_details.mothersDOB}
-                // defaultValue={formData.insurance_details.mothersDOB}
-                onChange={(date) => setFormData({ ...formData, mothersDOB: date })}
-                renderInput={(params) => (
-                    <TextField {...params} fullWidth error={!!errors.mothersDOB} helperText={errors.mothersDOB} />
-                )}
-                />
-            </LocalizationProvider>
-
-            <TextField
-                label="Spouse Name"
-                name="spouseName"
-                defaultValue={formData.insurance_details.spouseName}
-                value={formData.insurance_details.spouseName}
-                onChange={(e)=>{handleChange(e,"personal_details")}}
-                fullWidth
-                error={!!errors.spouseName}
-                helperText={errors.spouseName}
-            />            
-            <LocalizationProvider dateAdapter={AdapterDayjs}>
-                <DatePicker
-                label="Spouse DOB"
-                // defaultValue={formData.insurance_details.spouseDOB}
-                value={formData.insurance_details.spouseDOB}
-                onChange={(date) => setFormData({ ...formData, spouseDOB: date })}
-                renderInput={(params) => (
-                    <TextField {...params} fullWidth error={!!errors.spouseDOB} helperText={errors.spouseDOB} />
-                )}
-                />
-            </LocalizationProvider>
-
-            <TextField
-                label="Child1 Name"
-                name="child1"
-                defaultValue={formData.insurance_details.child1}
-                value={formData.insurance_details.child1}
-                onChange={(e)=>{handleChange(e,"personal_details")}}
-                fullWidth
-                error={!!errors.child1}
-                helperText={errors.child1}
-            />
-            <LocalizationProvider dateAdapter={AdapterDayjs}>
-                <DatePicker
-                label="Child1 DOB"
-                value={formData.insurance_details.child1Dob}
-                // defaultValue={formData.insurance_details.child1DOB}
-                onChange={(date) => setFormData({ ...formData, child1DOB: date })}
-                renderInput={(params) => (
-                    <TextField {...params} fullWidth error={!!errors.child1DOB} helperText={errors.child1DOB} />
-                )}
-                />
-            </LocalizationProvider>
-
-            <TextField
-                label="Child2 Name"
-                name="child2"
-                defaultValue={formData.insurance_details.child2}
-                value={formData.insurance_details.child2}
-                onChange={(e)=>{handleChange(e,"personal_details")}}
-                fullWidth
-                error={!!errors.child2}
-                helperText={errors.child2}
-            />
-
-            <LocalizationProvider dateAdapter={AdapterDayjs}>
-                <DatePicker
-                label="Child2 DOB"
-                value={formData.child2DOB}
-                // defaultValue={formData.insurance_details.child2DOB}
-                onChange={(date) => setFormData({ ...formData, child2DOB: date })}
-                renderInput={(params) => (
-                    <TextField {...params} fullWidth error={!!errors.child2DOB} helperText={errors.child2DOB} />
-                )}
-                />
-            </LocalizationProvider>
-            </div>
+          </div>
         );
 
-      // Other steps remain unchanged
       default:
         return null;
     }

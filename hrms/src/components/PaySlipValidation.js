@@ -80,35 +80,43 @@
 
 
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import Navbar from '../pages/Navbar'; 
-// import './PaySlipValidation.css';
 import '../styles/PaySlipValidation.css';
+import api from "../api";
 
 
 const EmpSalaryDetails = () => {
     const [employeeData, setEmployeeData] = useState([]);
+    const [error, setError] = useState(''); // State for managing error messages
 
     // Fetch employee and salary details from the API
     useEffect(() => {
         const fetchEmployees = async () => {
             try {
-                const companyId = localStorage.getItem('companyId');  // Fetch company ID from local storage
-                const response = await axios.get(`http://localhost:8000/api/employee/?company_id=${companyId}`);
-                
-                // Map through employees and gather work_details and salary_details
-                const employees = response.data.employees.map(employee => ({
-                    empId: employee.work_details.empId,
-                    fullName: `${employee.work_details.firstName} ${employee.work_details.lastName}`,  // Concatenating first and last name
-                    role: employee.work_details.currentRole,  // Assuming 'role' is present in work_details
-                    salaryDetails: employee.salary_details
-                }));
-
-                setEmployeeData(employees);  // Set the combined employee and salary data
+              const companyId = localStorage.getItem('companyId');
+              if (!companyId) {
+                throw new Error('Company ID not found in localStorage.');
+              }
+          
+              const response = await api.get('/api/employee/', {
+                params: { company_id: companyId }, // Pass query parameters in a clean way
+              });
+          
+              // Transform the API response data
+              const employees = response.data.employees.map(employee => ({
+                empId: employee.work_details.empId,
+                fullName: `${employee.work_details.firstName} ${employee.work_details.lastName}`,
+                role: employee.work_details.currentRole,
+                salaryDetails: employee.salary_details,
+              }));
+          
+              setEmployeeData(employees); // Update the state with transformed data
             } catch (err) {
-                console.error(err);
+              console.error('Error fetching employees:', err.response?.data || err.message);
+              setError('Unable to fetch employees. Please try again later.'); // Display user-friendly error
             }
-        };
+          };
+          
 
         fetchEmployees();
     }, []);
@@ -117,6 +125,8 @@ const EmpSalaryDetails = () => {
         <div>
             <Navbar />  
             <div>
+            {error && <p style={{ color: 'red' }}>{error}</p>}
+            {/* Render employee data */}
                 <h2>Employee Salary Details</h2>
                 <div className="validation-table-container">
                     <table>

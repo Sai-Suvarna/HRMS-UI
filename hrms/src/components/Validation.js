@@ -4,9 +4,8 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 // import './Validation.css';
 import '../styles/Validation.css';
-
 import Navbar from '../pages/Navbar';
-import { jwtDecode } from 'jwt-decode'; 
+import api from "../api";
 
 import {
   Table,
@@ -27,47 +26,21 @@ const PayCalculationTable = () => {
   const [selectedMonth, setSelectedMonth] = useState('');
   const [payCalculations, setPayCalculations] = useState([]);
   const companyId = localStorage.getItem('companyId');
-  
-  
-  const checkJWTToken = () => {
-    const token = localStorage.getItem('access');
-    if (!token) {
-      navigate('/login');
-      return;
-    }
-  
-    try {
-      const decodedToken = jwtDecode(token);
-      const currentTime = Date.now() / 1000;
-      if (decodedToken.exp < currentTime) {
-        // Token expired, redirect to login
-        localStorage.removeItem('access');
-        navigate('/login');
-      }
-    } catch (error) {
-      console.error('Error decoding token:', error);
-      navigate('/login');
-    }
-  };
-  
-  useEffect(() => {
-    checkJWTToken();
-  }, []);
 
   // Fetch unique month values on component mount
-useEffect(() => {
-  const fetchMonths = async () => {
-    try {
-      const response = await axios.get('http://127.0.0.1:8000/api/paycalculation/unique-months/', {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('access')}`, // Pass the token in the header
-        },
-      });
-      setMonths(response.data);
-    } catch (error) {
-      console.error('Error fetching unique months:', error);
-    }
-  };
+  useEffect(() => {
+    const fetchMonths = async () => {
+      try {
+        const response = await api.get('/api/paycalculation/unique-months/', {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('access')}`, // Add token dynamically
+          },
+        });
+        setMonths(response.data); // Update state with API response
+      } catch (error) {
+        console.error('Error fetching unique months:', error.response?.data || error.message);
+      }
+    };
   fetchMonths();
 }, []);
 
@@ -75,17 +48,13 @@ useEffect(() => {
 const fetchPayCalculations = async () => {
   try {
     const response = await axios.get('http://127.0.0.1:8000/api/paycalculation/by-month/', {
-      params: { month: selectedMonth, company_id: companyId },
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('access')}`, // Pass the token in the header
-      },
+      params: { month: selectedMonth, company_id: companyId }
     });
     setPayCalculations(response.data);
   } catch (error) {
     console.error('Error fetching pay calculations:', error);
   }
 };
-
 
   return (
     <div>

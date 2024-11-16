@@ -2,12 +2,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../pages/Navbar'; 
-// import './PayroleSet.css'; 
 import '../styles/PayroleSet.css';
-
-import axios from 'axios';
-import { jwtDecode } from 'jwt-decode'; 
-
+import api from "../api";
 
 const EmployeeCompensationForm = () => {
   const [formData, setFormData] = useState({
@@ -81,31 +77,6 @@ const EmployeeCompensationForm = () => {
       
         return deductions;
     }, [totals.totalEarnings]);
-
-    const checkJWTToken = () => {
-      const token = localStorage.getItem('access');
-      if (!token) {
-        navigate('/login');
-        return;
-      }
-    
-      try {
-        const decodedToken = jwtDecode(token);
-        const currentTime = Date.now() / 1000;
-        if (decodedToken.exp < currentTime) {
-          // Token expired, redirect to login
-          localStorage.removeItem('access');
-          navigate('/login');
-        }
-      } catch (error) {
-        console.error('Error decoding token:', error);
-        navigate('/login');
-      }
-    };
-    
-    useEffect(() => {
-      checkJWTToken();
-    }, []);
      
     useEffect(() => {
         const grossPay = 36000;
@@ -250,55 +221,23 @@ const EmployeeCompensationForm = () => {
       };
 
       try {
-        // Check if the JWT token is valid before fetching compensation settings
-        await checkJWTToken(); // Ensure this function is awaited if it's async
-        
-        // Send the data to the API with the data and headers
-        const response = await axios.post(
-          'http://localhost:8000/api/payroledetails/',
-          dataToSubmit, // Pass the data object as the body
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem('access')}`, // Pass the token in the header
-            },
-          }
-        );
-      
+        // Submit the data using the pre-configured API instance
+        const response = await api.post('/api/payroledetails/', dataToSubmit);
+    
         if (response.status === 201) {
           // Handle success
           console.log('Data successfully submitted:', response.data);
+    
           // Redirect to EmployeeSetup
           navigate('/employeesetup');
         }
       } catch (error) {
+        // Log error details
         console.error('Error submitting form:', error.response?.data || error.message);
       } finally {
-        setIsSubmitting(false); // Enable the button again
+        // Ensure the submitting state is updated
+        setIsSubmitting(false);
       }
-      
-
-        // try {
-        //  // Check if the JWT token is valid before fetching compensation settings
-        // checkJWTToken();
-        // // Send the data to the API
-        // const response = await axios.post(`http://localhost:8000/api/payroledetails/`, {
-        //   headers: {
-        //     Authorization: `Bearer ${localStorage.getItem('access')}`, // Pass the token in the header
-        //   },
-        // });
-        // // const response = await axios.post('http://localhost:8000/api/payroledetails/', dataToSubmit);
-        // if (response.status === 201) {
-        //     // Handle success
-        //     console.log('Data successfully submitted:', response.data);
-        // // Redirect to EmployeeSetup
-        //     navigate('/employeesetup'); 
-            
-        // }
-        // } catch (error) {
-        // console.error('Error submitting form:', error.response?.data || error.message);
-        // }finally {
-        // setIsSubmitting(false); // Enable the button again
-        // }
     };
 
   return (

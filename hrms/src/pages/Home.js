@@ -4,8 +4,9 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom'; // Import useNavigate
 import Navbar from './Navbar';
-// import '../components/Home.css';
 import '../styles/Home.css';
+import api from "../api";
+
 
 import axios from 'axios'; // Import axios for API calls
 import { jwtDecode } from 'jwt-decode'; // Correct named import
@@ -43,13 +44,8 @@ const Home = () => {
       try {
         const companyId = localStorage.getItem('companyId');
         if (companyId) {
-          // const response = await axios.get(`http://localhost:8000/api/getcompanydetails/`, {
-
-          const response = await axios.get(`http://localhost:8000/api/companydetails/retrieve/${companyId}/`, {
-            headers: {
-              'Authorization': `Bearer ${localStorage.getItem('access')}`
-            }
-          });
+          const response = await api.get('/api/getcompanydetails/');
+          // const response = await axios.get(`http://localhost:8000/api/getcompanydetails/`);
           if (response.data) {
             setCompanyExists(true);
           }

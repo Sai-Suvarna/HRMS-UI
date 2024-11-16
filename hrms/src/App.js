@@ -38,21 +38,20 @@ function App() {
           <Route path="/login" element={<LoginForm />} />
           <Route path="/register" element={<RegisterAndLogout />} />
           <Route path="/home" element={<Home/>} />
-          <Route path="/companysetup" element={<CompanySetup />} />
+          <Route path="/companysetup" element={<ProtectedRoute><CompanySetup /></ProtectedRoute>} />
           <Route path="/employeesetup" element={<EmployeeSetup />} />
 
           <Route path="/employeesetup2" element={<ProtectedRoute> <EmployeeSetup2 /> </ProtectedRoute>} />
       
           {/* <Route path="/payrolesetup" element={<PayroleSetup />} /> */}
-          <Route path="/employeelist" element={<EmployeeList />} />
-          <Route path="/EmployeeSetupGrid" element={<EmployeeSetupGrid />} /> 
-          <Route path="/Attendance" element={<TimeSheetPage />} />
-          <Route path="/payslipvalidation" element={<payslipvalidation />} />
-          <Route path="/payroleset" element={<PayroleSet/>} />
-          <Route path="/payslipvalidation" element={<PaySlipValidation />} />
+          <Route path="/employeelist" element={<ProtectedRoute><EmployeeList /></ProtectedRoute>} />
+          <Route path="/EmployeeSetupGrid" element={<ProtectedRoute><EmployeeSetupGrid /></ProtectedRoute>} /> 
+          <Route path="/Attendance" element={<ProtectedRoute><TimeSheetPage /></ProtectedRoute>} />
+          <Route path="/payroleset" element={<ProtectedRoute><PayroleSet/></ProtectedRoute>} />
+          <Route path="/payslipvalidation" element={<ProtectedRoute><PaySlipValidation /></ProtectedRoute>} />
           <Route path="/logout" element={<Logout />} />
-          <Route path="/companydetails" element={<CompanyDetails />} /> {/* Add route */}
-          <Route path="/Validation" element={<Validation />} />
+          <Route path="/companydetails" element={<ProtectedRoute> <CompanyDetails /> </ProtectedRoute>} /> 
+          <Route path="/Validation" element={<ProtectedRoute><Validation /></ProtectedRoute>} />
 
         </Routes>
       </div>

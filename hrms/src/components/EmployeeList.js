@@ -1,61 +1,35 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { FaEdit } from 'react-icons/fa'; 
 import Navbar from '../pages/Navbar';
-import { jwtDecode } from 'jwt-decode'; 
 import '../styles/EmployeeList.css'
+import api from "../api";
 
 const EmployeeList = () => {
   const [employees, setEmployees] = useState([]);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
- // Function to check JWT token validity
- const checkJWTToken = () => {
-  const token = localStorage.getItem('access');
-  if (!token) {
-    navigate('/login');
-    return;
-  }
-
-  try {
-    const decodedToken = jwtDecode(token);
-    const currentTime = Date.now() / 1000;
-    if (decodedToken.exp < currentTime) {
-      // Token expired, redirect to login
-      localStorage.removeItem('access');
-      navigate('/login');
-    }
-  } catch (error) {
-    console.error('Error decoding token:', error);
-    navigate('/login');
-  }
-};
-
 useEffect(() => {
-  checkJWTToken();
-}, []);
 
-useEffect(() => {
-  // Check if the JWT token is valid before fetching compensation settings
-  checkJWTToken();
-    const fetchEmployees = async () => {
-      try {
-        const companyId = localStorage.getItem('companyId');  
-        const response = await axios.get(`http://localhost:8000/api/employee/?company_id=${companyId}`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('access')}`, 
-          },
-        });
-       
-        // const response = await axios.get(`http://localhost:8000/api/employee/?company_id=${companyId}`);
-        setEmployees(response.data.employees);  
-      } catch (err) {
-        setError('Error fetching employees');
-        console.error(err);
+  const fetchEmployees = async () => {
+    try {
+      const companyId = localStorage.getItem('companyId');
+      if (!companyId) {
+        throw new Error("Company ID is missing");
       }
-    };
+  
+      const response = await api.get(`/api/employee/`, {
+        params: { company_id: companyId },
+      });
+  
+      setEmployees(response.data.employees); 
+    } catch (err) {
+      setError('Error fetching employees');
+      console.error('Error fetching employees:', err);
+    }
+  };
+  
   
     fetchEmployees();
   }, []);
@@ -69,10 +43,16 @@ useEffect(() => {
   };
 
   const handleEditEmployee = (employeeData) => {
-    console.log("Data",employeeData);
-    navigate('/employeesetup2', { state: { employeeData } }); 
+    console.log("Data", employeeData);
+    navigate('/employeesetup2', { 
+      state: { 
+        employeeData,
+        isEditMode: true 
+      } 
+    });
   };
   
+
   if (error) {
     return <div>{error}</div>;
   }

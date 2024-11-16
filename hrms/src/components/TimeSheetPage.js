@@ -11,7 +11,8 @@ import StepLabel from '@mui/material/StepLabel';
 import Button from '@mui/material/Button';
 import Navbar from '../pages/Navbar';
 import axios from 'axios';
-import { jwtDecode } from 'jwt-decode'; 
+import api from "../api";
+
 
 const steps = [
   'Download Excel Template',
@@ -152,16 +153,7 @@ const TimeSheetPage = () => {
     console.log('Fetching timesheets for company ID:', companyId, 'and month:', month);
 
     try {
-      // Check if the JWT token is valid before fetching compensation settings
-      checkJWTToken();
-      const response = await axios.get(`http://127.0.0.1:8000/timesheet-view/${companyId}/${month}/`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('access')}`, // Pass the token in the header
-        },
-      });
-        // const response = await axios.get(
-        //     `http://127.0.0.1:8000/timesheet-view/${companyId}/${month}/`
-        // );
+      const response = await api.get(`/timesheet-view/${companyId}/${month}/`);
         console.log('Fetched Timesheets:', response.data.Attendance_data);
         setTimesheets(response.data.Attendance_data);
     } catch (error) {
@@ -171,18 +163,14 @@ const TimeSheetPage = () => {
 
     const fetchCompensationSettings = async () => {
       try {
-         // Check if the JWT token is valid before fetching compensation settings
-         checkJWTToken();
+
         const companyId = localStorage.getItem('companyId');
         if (!companyId) {
           console.error('Company ID not found');
           return;
         }
-        const response = await axios.get(`http://localhost:8000/payroll-settings/${companyId}/`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('access')}`, // Pass the token in the header
-          },
-        });
+        const response = await api.get(`/payroll-settings/${companyId}/`);
+
         // const response = await axios.get(`http://localhost:8000/payroll-settings/${companyId}/`);
         console.log('Fetched Payroll Settings:', response.data); // Debug: Check if data is fetched
         setPayrollSettings(response.data); // Store the fetched settings
@@ -198,13 +186,9 @@ const TimeSheetPage = () => {
   const fetchEmployeeData = async () => {
     const companyId = localStorage.getItem('companyId');
     try {
-      // Check if the JWT token is valid before fetching compensation settings
-      checkJWTToken();
-      const response = await fetch(`http://localhost:8000/api/employee/work-details/?company_id=${companyId}`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('access')}`, // Pass the token in the header
-        },
-      });
+
+      const response = await api.get(`/api/employee/work-details/?company_id=${companyId}/`);
+
       // const response = await fetch(`http://localhost:8000/api/employee/work-details/?company_id=${companyId}`);
   
       if (!response.ok) {
@@ -346,30 +330,7 @@ const TimeSheetPage = () => {
   //     setCalculatedData(result.filter(Boolean)); // Filter out any null entries
   //   }
   // }, [timesheets, employeeData, payrollSettings]);
-  const checkJWTToken = () => {
-    const token = localStorage.getItem('access');
-    if (!token) {
-      navigate('/login');
-      return;
-    }
-  
-    try {
-      const decodedToken = jwtDecode(token);
-      const currentTime = Date.now() / 1000;
-      if (decodedToken.exp < currentTime) {
-        // Token expired, redirect to login
-        localStorage.removeItem('access');
-        navigate('/login');
-      }
-    } catch (error) {
-      console.error('Error decoding token:', error);
-      navigate('/login');
-    }
-  };
-  
-  useEffect(() => {
-    checkJWTToken();
-  }, []);
+
 
   const calculateEEPF = (basic, payrollSettings) => {
     let eePF = 0;
@@ -868,19 +829,14 @@ const TimeSheetPage = () => {
   // };
   const savePayData = async () => {
     try {
-       // Check if the JWT token is valid before fetching compensation settings
-       checkJWTToken();
+
       for (const entry of calculatedData) {
-        const response = await axios.post(
-          'http://127.0.0.1:8000/api/save-pay-data/',
-          entry, // The data you want to send in the POST request
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem('access')}`, // Pass the token in the header
-            },
-          }
-        );
-        
+       
+        const response = await api.post('/api/save-pay-data/', entry, {
+          headers: {
+            'Content-Type': 'application/json', // Ensure content type is JSON
+          },
+        });
         // const response = await axios.post(
         //   'http://127.0.0.1:8000/api/save-pay-data/', 
         //   entry 
