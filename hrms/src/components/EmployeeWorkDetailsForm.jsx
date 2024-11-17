@@ -5,7 +5,7 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 // import dayjs, { Dayjs } from 'dayjs';
 import dayjs from 'dayjs';
 
-const EmployeeWorkDetailsForm = ({ formData, errors, handleChange, setFormData }) => {
+const EmployeeWorkDetailsForm = ({ formData, errors, handleChange, setFormData, handleEmpIdChange, isRehireMode }) => {
   console.log("Date",formData.work_details.dateOfJoining)
 
   return <>
@@ -15,9 +15,14 @@ const EmployeeWorkDetailsForm = ({ formData, errors, handleChange, setFormData }
       name="empId"
       defaultValue={formData.work_details.empId}
       value={formData.work_details.empId}
-      onChange={(e)=>{handleChange(e,"work_details")}}
+      onChange={(e) => {
+        handleChange(e, 'work_details');
+        handleEmpIdChange(e); // Add this line to call the function when empId changes
+      }}
+      // onChange={(e)=>{handleChange(e,"work_details")}}
       fullWidth
-      error={!!errors.empId}
+      // error={!!errors.empId}
+      error={errors.empId && <span className="error">{errors.empId}</span>}
       helperText={errors.empId}
       required
                 

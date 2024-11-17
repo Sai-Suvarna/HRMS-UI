@@ -4,6 +4,8 @@ import { FaEdit } from 'react-icons/fa';
 import Navbar from '../pages/Navbar';
 import '../styles/EmployeeList.css'
 import api from "../api";
+import { BiAddToQueue } from "react-icons/bi";
+
 
 const EmployeeList = () => {
   const [employees, setEmployees] = useState([]);
@@ -51,6 +53,12 @@ useEffect(() => {
       } 
     });
   };
+
+  const handleRehireClick = (employee) => {
+    navigate('/employeesetup2', {
+      state: { employeeData: employee, isEditMode: true, isRehireMode: true }
+    });
+  };
   
 
   if (error) {
@@ -85,25 +93,33 @@ useEffect(() => {
             <tbody>
               {employees.map((employee) => (
                 <tr key={employee.work_details.wdId}>
-
-                  <td>{employee.work_details.empId}
-                   <FaEdit
-                    style={{ cursor: 'pointer', marginLeft: '10px', fontSize: '20px' }} 
-                    onClick={() => handleEditEmployee(employee)} 
-                  />
-                    </td>
+                     <td>
+        {employee.work_details.empId}
+        {employee.work_details.employmentStatus === 'active' ? (
+          <FaEdit
+            style={{ cursor: 'pointer', marginLeft: '10px', fontSize: '20px' }}
+            onClick={() => handleEditEmployee(employee)}
+          />
+        ) : (
+          <BiAddToQueue
+            style={{ cursor: 'pointer', marginLeft: '10px', fontSize: '20px' }}
+            onClick={() => handleRehireClick(employee)}
+            
+          />
+        )}
+      </td>
 
                   <td>
                     <div>Name: {employee.work_details.firstName} {employee.work_details.lastName}</div>
-                    <div>Employment Status{employee.work_details.employmentStatus}</div>
-                    <div>Comapny Email Id{employee.work_details.companyEmailId}</div>
-                    <div>Date of Joining{employee.work_details.dateOfJoining}</div>
-                    <div>Date of Relieving{employee.work_details.dateOfRelieving}</div>
+                    <div>Employment Status: {employee.work_details.employmentStatus}</div>
+                    <div>Comapny Email Id: {employee.work_details.companyEmailId}</div>
+                    <div>Date of Joining: {employee.work_details.dateOfJoining}</div>
+                    <div>Date of Relieving: {employee.work_details.dateOfRelieving}</div>
                     <div>Department: {employee.work_details.department}</div>
-                    <div>Group{employee.work_details.group}</div>
-                    <div>Role Type{employee.work_details.roleType}</div>
-                    <div>Current Role{employee.work_details.currentRole}</div>
-                    <div>Reporting Manager{employee.work_details.reportingManager}</div>
+                    <div>Group: {employee.work_details.group}</div>
+                    <div>Role Type: {employee.work_details.roleType}</div>
+                    <div>Current Role: {employee.work_details.currentRole}</div>
+                    <div>Reporting Manager: {employee.work_details.reportingManager}</div>
                     <div>Reason for leaving: {employee.work_details.reasonForLeaving}</div>
                     <div>Month and Year Of Termination: {employee.work_details.monthYearOfTermination}</div>
                     <div>Total exp in this Company: {employee.work_details.totalExpInThisCompany}</div>

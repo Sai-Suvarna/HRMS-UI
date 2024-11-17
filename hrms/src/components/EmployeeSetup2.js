@@ -38,17 +38,37 @@ const [formData, setFormData] = useState({
   const [errors, setErrors] = useState({});
   const navigate = useNavigate();
   const location = useLocation();
+  const [rehireMode, setRehireMode] = useState(false);
+
 
   // const employeeData = location.state?.employeeData;
+  const { employeeData, isEditMode = false, isRehireMode = false } = location.state || {};
+  const [empIdExists, setEmpIdExists] = useState(false);
+  const [newEmpId, setNewEmpId] = useState('');
 
-  const { employeeData, isEditMode = false } = location.state || {}; // Retrieve from location.state
+  // const { employeeData, isEditMode = false } = location.state || {}; // Retrieve from location.state
   console.log("EData:",employeeData);
   console.log("Edit Mode:",isEditMode);
 
 
+  // useEffect(() => {
+  //   if ( employeeData) {
+  //       console.log("HELLO");
+  //     setFormData((prevFormData) => ({
+  //       ...prevFormData,
+  //       work_details: { ...employeeData.work_details },
+  //       social_security_details: { ...employeeData.social_security_details },
+  //       personal_details: { ...employeeData.personal_details },
+  //       insurance_details: { ...employeeData.insurance_details },
+  //       salary_details: { ...employeeData.salary_details },
+  //     }));
+      
+  //   }
+  //   setDataload(true);
+  // }, [ employeeData]);
+
   useEffect(() => {
-    if ( employeeData) {
-        console.log("HELLO");
+    if (employeeData) {
       setFormData((prevFormData) => ({
         ...prevFormData,
         work_details: { ...employeeData.work_details },
@@ -57,10 +77,109 @@ const [formData, setFormData] = useState({
         insurance_details: { ...employeeData.insurance_details },
         salary_details: { ...employeeData.salary_details },
       }));
-      
+    }
+    if (isRehireMode) {
+      setRehireMode(true);
     }
     setDataload(true);
-  }, [ employeeData]);
+  }, [employeeData, isRehireMode]);
+
+  // const handleRehire = () => {
+  //   // Enable user to change empId and set form to rehire mode
+  //   setRehireMode(true);
+  //   message.info('Please change the Employee ID to proceed with rehire.');
+  // };
+
+  const handleRehire = async () => {
+    // Check if empId already exists in the system
+    try {
+      console.log("ID:", formData.work_details.wdId);
+
+      const response = await api.get(`/api/employee/${formData.work_details.wdId}/`);
+      
+      if (response.data && response.data.work_details && response.data.work_details.empId) {
+        const existingEmpId = response.data.work_details.empId;
+        console.log("existingEmpId:", existingEmpId);
+        console.log("formData:", formData.work_details.empId);
+
+        if (existingEmpId === formData.work_details.empId) {
+          setEmpIdExists(true);
+          message.warning('The Employee ID already exists. Please provide a new Employee ID.');
+        } else {
+          setEmpIdExists(false);
+          // setRehireMode(true);
+          
+          // Automatically trigger handleSubmit after rehire is successful
+          handleSubmit(); // Call submit directly after rehire
+        }
+      } else {
+        message.error('No work details found for the given ID.');
+      }
+
+    } catch (error) {
+      console.error('Error checking Employee ID:', error);
+      message.error('Failed to check Employee ID.');
+    }
+};
+
+  
+
+//   const handleRehire = async () => {
+//     // Check if empId already exists in the system
+//     try {
+//       console.log("ID:",formData.work_details.wdId)
+
+//       const response = await api.get(`/api/employee/${formData.work_details.wdId}/`);
+//  // Check if empId exists in the work_details of the response
+//  if (response.data && response.data.work_details && response.data.work_details.empId) {
+//   const existingEmpId = response.data.work_details.empId;
+//   console.log("existingEmpId:", existingEmpId)
+//   console.log("formData:", formData.work_details.empId)
+
+//   if (existingEmpId === formData.work_details.empId) {
+//     setEmpIdExists(true);
+//     message.warning('The Employee ID already exists. Please provide a new Employee ID.');
+//   } else {
+//     setEmpIdExists(false);
+
+//     message.info('You can proceed with rehire. Click "Submit as Rehire" to continue.');
+//     console.log("HELLO")
+//     setRehireMode(true);
+
+//   }
+// } else {
+//   message.error('No work details found for the given ID.');
+// }
+
+// } catch (error) {
+// console.error('Error checking Employee ID:', error);
+// message.error('Failed to check Employee ID.');
+// }
+// };
+  //     console.log("Response Data:",response)
+  //     if (response.data.exists) {
+  //       setEmpIdExists(true);
+  //       message.warning('The Employee ID already exists. Please provide a new Employee ID.');
+  //     } else {
+  //       setEmpIdExists(false);
+  //       message.info('You can proceed with rehire. Click "Submit as Rehire" to continue.');
+  //     }
+  //   } catch (error) {
+  //     console.error('Error checking Employee ID:', error);
+  //     message.error('Failed to check Employee ID.');
+  //   }
+  // };
+
+  const handleEmpIdChange = (e) => {
+    const value = e.target.value;
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      work_details: { ...prevFormData.work_details, empId: value },
+    }));
+    setNewEmpId(value);
+  };
+
+  
 
   const handleNext = () => {
     if (validateStep(activeStep)) {
@@ -84,7 +203,7 @@ const [formData, setFormData] = useState({
     console.log(formData)
   };
 
-
+  
   const validateStep = (step) => {
     let stepErrors = {};
     
@@ -311,6 +430,7 @@ const [formData, setFormData] = useState({
 
 
   const handleSubmit = async () => {
+    console.log("HI HELLO")
     const company_id = localStorage.getItem('companyId');
     if (!company_id) {
       console.error('Company ID not found');
@@ -355,41 +475,69 @@ const dataToSubmit = {
   
    const id = isEditMode?employeeData.work_details.wdId:"";
 
-    try {
-      const url = isEditMode ? `/api/employee/${id}/` : '/api/employee/';
+  //   try {
+  //     const url = isEditMode ? `/api/employee/${id}/` : '/api/employee/';
 
-        // const url = isEditMode
-        //   ? `http://localhost:8000/api/employee/${id}/`
-        //   : 'http://localhost:8000/api/employee/';
-        console.log("URL",url)
-        // const response = await axios({
-        //   method: isEditMode ? 'patch' : 'post',
-        //   url,
-        //   data: dataToSubmit,
-        //   headers: {
-        //     Authorization: `Bearer ${localStorage.getItem('access')}`,
-        //   },
-        // });
-        const response = isEditMode
-        ? await api.patch(url, dataToSubmit, {
-            // headers: {
-            //   Authorization: `Bearer ${localStorage.getItem('access')}`,
-            // },
-          })
-        : await api.post(url, dataToSubmit, {
-            // headers: {
-            //   Authorization: `Bearer ${localStorage.getItem('access')}`,
-            // },
-          });
-        if (response.status === 200 || response.status === 201) {
-            message.success(`Employee details ${isEditMode ? 'updated' : 'submitted'} successfully`);
-            navigate('/employeelist');
-      }
-    } catch (error) {
-        message.error(`Error ${isEditMode ? 'updating' : 'submitting'} employee details`);
-        console.error(error);
+  //       console.log("URL",url)
+
+  //       const response = isEditMode
+  //       ? await api.patch(url, dataToSubmit)
+  //       : await api.post(url, dataToSubmit);
+  //       if (response.status === 200 || response.status === 201) {
+  //           message.success(`Employee details ${isEditMode ? 'updated' : 'submitted'} successfully`);
+  //           navigate('/employeelist');
+  //     }
+  //   } catch (error) {
+  //       message.error(`Error ${isEditMode ? 'updating' : 'submitting'} employee details`);
+  //       console.error(error);
+  //   }
+  // }; 
+
+  try {
+    const url = isEditMode && !rehireMode ? `/api/employee/${employeeData.work_details.wdId}/` : '/api/employee/';
+    console.log("URL:",url)
+    const response = isEditMode && !rehireMode
+      ? await api.patch(url, dataToSubmit)
+      : await api.post(url, dataToSubmit);
+
+    if (response.status === 200 || response.status === 201) {
+      message.success(`Employee details ${isEditMode ? 'updated' : 'submitted'} successfully`);
+      navigate('/employeelist');
     }
-  }; 
+  } catch (error) {
+    message.error(`Error ${isEditMode ? 'updating' : 'submitting'} employee details`);
+    console.error(error);
+  }
+};
+
+
+// try {
+//   const url = isEditMode && !rehireMode 
+//     ? `/api/employee/${employeeData.work_details.wdId}/`
+//     : '/api/employee/'; // For rehire or new entry, always use POST
+
+//   const response = rehireMode
+//     ? await api.post(url, dataToSubmit) // Create new record for rehire
+//     : isEditMode
+//     ? await api.patch(url, dataToSubmit) // Update the record if in edit mode
+//     : await api.post(url, dataToSubmit); // Otherwise, create a new record
+
+//   // Log the response for debugging
+//   console.log("API Response:", response);
+
+//   if (response.status === 200 || response.status === 201) {
+//     message.success(`Employee details ${isEditMode ? 'updated' : 'submitted'} successfully`);
+//     navigate('/employeelist'); // Navigate to the employee list page after successful submission
+//   } else {
+//     // Handle unexpected status codes
+//     console.error('Unexpected response status:', response.status);
+//     message.error(`Failed to ${isEditMode ? 'update' : 'submit'} employee details`);
+//   }
+// } catch (error) {
+//   console.error("Submission error:", error);
+//   message.error(`Error ${isEditMode ? 'updating' : 'submitting'} employee details`);
+// }
+// };
 
   const renderFormFields = (step) => {
 
@@ -402,6 +550,9 @@ const dataToSubmit = {
         errors={errors} 
         handleChange={handleChange} 
         setFormData={setFormData} 
+        isRehireMode={rehireMode}
+        handleEmpIdChange={handleEmpIdChange} 
+
       />
     </div>
         );
@@ -470,18 +621,91 @@ const dataToSubmit = {
             </Button>
           )}
   
-          {activeStep === steps.length - 1 ? (
+          {/* {activeStep === steps.length - 1 ? (
             <Button variant="contained" onClick={handleSubmit} className="submit-button">
                 {isEditMode ? 'Update' : 'Submit'}            </Button>
           ) : (
             <Button variant="contained" onClick={handleNext}>
               Next
+            </Button> */}
+
+             {/* {activeStep === steps.length - 1 ? (
+    <Button variant="contained" onClick={handleSubmit} className="submit-button">
+      {rehireMode ? 'Rehire' : isEditMode ? 'Update' : 'Submit'}
+    </Button>
+  ) : (
+    <Button variant="contained" onClick={handleNext}>
+      Next
+    </Button>  */}
+    
+    {activeStep === steps.length - 1 ? (
+            <Button
+              variant="contained"
+              onClick={rehireMode ? handleRehire : handleSubmit}
+              className="submit-button"
+            >
+              {rehireMode ? 'Rehire' : isEditMode ? 'Update' : 'Submit'}
             </Button>
+          ) : (
+            <Button variant="contained" onClick={handleNext}>
+              Next
+            </Button>
+     
           )}
         </Box>
       </Box>
     </div>
   );
+
+
+  // return (
+  //   <div>
+  //     <Navbar />
+  //     <Box className="employee-setup-container">
+  //       <Stepper activeStep={activeStep} alternativeLabel className="employee-setup-stepper">
+  //         {steps.map((label) => (
+  //           <Step key={label}>
+  //             <StepLabel>{label}</StepLabel>
+  //           </Step>
+  //         ))}
+  //       </Stepper>
+
+  //       <Box sx={{ mt: 2, mb: 2 }}>
+  //         {isDataLoaded && renderFormFields(activeStep)}
+  //       </Box>
+
+  //       <Box className="employee-setup-button-container">
+  //         {activeStep !== 0 && (
+  //           <Button onClick={handleBack} className="back-button">
+  //             Back
+  //           </Button>
+  //         )}
+
+  //         {rehireMode && (
+  //           <Button variant="contained" onClick={handleSubmit} className="submit-button">
+  //             Submit as Rehire
+  //           </Button>
+  //         )}
+
+  //         {!rehireMode && activeStep === steps.length - 1 ? (
+  //           <Button variant="contained" onClick={handleSubmit} className="submit-button">
+  //             {isEditMode ? 'Update' : 'Submit'}
+  //           </Button>
+  //         ) : (
+  //           <Button variant="contained" onClick={handleNext}>
+  //             Next
+  //           </Button>
+  //         )}
+
+  //         {employeeData && !rehireMode && (
+  //           <Button variant="outlined" onClick={handleRehire} style={{ marginLeft: '1rem' }}>
+  //             Rehire
+  //           </Button>
+  //         )}
+  //       </Box>
+  //     </Box>
+  //   </div>
+  // );
   
 }
 

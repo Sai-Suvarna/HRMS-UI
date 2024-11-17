@@ -28,12 +28,12 @@ const LoginForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await api.post('/api/login/', formData, {
-        headers: {
-          'Content-Type': 'application/json',  // Specify the content type
-        },
-      });
-        // const response = await axios.post('http://localhost:8000/api/login/', formData);  // API call to login
+      // const response = await api.post('/api/login/', formData, {
+      //   headers: {
+      //     'Content-Type': 'application/json',  // Specify the content type
+      //   },
+      // });
+        const response = await axios.post('http://localhost:8000/api/login/', formData);  // API call to login
 
         if (response.data.access) {
             // Clear any old session data from previous users
