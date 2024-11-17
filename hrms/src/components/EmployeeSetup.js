@@ -10,6 +10,7 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import dayjs from 'dayjs';
 import { useLocation } from 'react-router-dom';
 // import { Button, Box, TextField, Select, MenuItem, Stepper, Step, StepLabel, Paper } from '@mui/material';
+import { Grid } from '@mui/material';
 
 // import './EmployeeSetup.css'; 
 import '../styles/EmployeeSetup.css'
@@ -31,6 +32,9 @@ const EmployeeSetup = () => {
   const [pfType, setPfType] = useState(''); // State for selected PF Type
   const [pfValue, setPfValue] = useState(0); // State to store calculated PF value
   const [professionalTax, setProfessionalTax] = useState(0); // State for Professional Tax
+
+  
+  
 
   const location = useLocation();
   const [employeeData, setEmployeeData] = useState({
@@ -379,6 +383,142 @@ const EmployeeSetup = () => {
       [name]: value,
     }));
   };
+
+  
+
+
+  const SalaryDetails = ({
+    payrollSettings,
+    form,
+    handleGrossPayChange,
+    handleBasicPayChange,
+    handleHraPayChange,
+    handleDaPayChange,
+    handleReimbursementChange,
+    handlePfTypeChange,
+    grossPay,
+    specialAllowances,
+  }) => {
+    return (
+      <Grid container spacing={2}>
+        {/* Gross Pay */}
+        <Grid item xs={12} sm={6}>
+          <Form.Item
+            label="Employee Gross Pay"
+            name={['salary_details', 'CTCpayAMT']}
+            rules={[
+              { required: true, message: 'Please enter Employee CTC value' },
+              { pattern: /^[0-9]*$/, message: 'Gross pay must be a numeric value' },
+            ]}
+          >
+            <Input value={grossPay} onChange={handleGrossPayChange} />
+          </Form.Item>
+        </Grid>
+  
+        {/* Basic Pay */}
+        <Grid item xs={12} sm={6}>
+          <Form.Item
+            label="Basic Pay"
+            name={['salary_details', 'BasicpayAMT']}
+            rules={[{ required: true, message: 'Please enter Basic pay value' }]}
+          >
+            <Input value={form.getFieldValue('salary_details.BasicpayAMT')} onChange={handleBasicPayChange} />
+          </Form.Item>
+        </Grid>
+  
+        {/* HRA Pay */}
+        <Grid item xs={12} sm={6}>
+          <Form.Item
+            label="HRA Pay"
+            name={['salary_details', 'HRApayAMT']}
+            rules={[{ required: true, message: 'Please enter HRA pay value' }]}
+          >
+            <Input value={form.getFieldValue('salary_details.HRApayAMT')} onChange={handleHraPayChange} />
+          </Form.Item>
+        </Grid>
+  
+        {/* DA Pay (if enabled) */}
+        {payrollSettings?.da_enabled && (
+          <Grid item xs={12} sm={6}>
+            <Form.Item
+              label="DA Pay"
+              name={['salary_details', 'DApayAMT']}
+              rules={[{ required: true, message: 'Please enter DA pay value' }]}
+            >
+              <Input value={form.getFieldValue('salary_details.DApayAMT')} onChange={handleDaPayChange} />
+            </Form.Item>
+          </Grid>
+        )}
+  
+        {/* Quarterly Allowance */}
+        {payrollSettings?.quarterly_allowance && (
+          <Grid item xs={12} sm={6}>
+            <Form.Item label="Quarterly Allowance" name={['salary_details', 'QAllowanceAMT']}>
+              <Input />
+            </Form.Item>
+          </Grid>
+        )}
+  
+        {/* Quarterly Bonus */}
+        {payrollSettings?.quarterly_bonus && (
+          <Grid item xs={12} sm={6}>
+            <Form.Item label="Quarterly Bonus" name={['salary_details', 'QBonusAMT']}>
+              <Input />
+            </Form.Item>
+          </Grid>
+        )}
+  
+        {/* Annual Bonus */}
+        {payrollSettings?.annual_bonus && (
+          <Grid item xs={12} sm={6}>
+            <Form.Item label="Annual Bonus" name={['salary_details', 'ABonusAMT']}>
+              <Input />
+            </Form.Item>
+          </Grid>
+        )}
+  
+        {/* Special Allowances */}
+        {payrollSettings?.special_allowances && (
+          <Grid item xs={12} sm={6}>
+            <Form.Item label="Special Allowances" name={['salary_details', 'SAllowancesAMT']}>
+              <Input value={specialAllowances} readOnly />
+            </Form.Item>
+          </Grid>
+        )}
+  
+        {/* PF Type (if enabled) */}
+        {payrollSettings?.pf_type === 'Both' && (
+          <Grid item xs={12} sm={6}>
+            <Form.Item label="Select PF Type" name={['salary_details', 'pf_type']}>
+              <Select onChange={handlePfTypeChange}>
+                <Select.Option value="!=15k">No Limit for PF Deduction</Select.Option>
+                <Select.Option value="15k">Wage limit 15k</Select.Option>
+              </Select>
+            </Form.Item>
+          </Grid>
+        )}
+  
+        {/* Voluntary Provident Fund */}
+        {payrollSettings?.voluntary_pf && (
+          <Grid item xs={12} sm={6}>
+            <Form.Item label="Voluntary Provident Fund" name={['salary_details', 'VPFAMT']}>
+              <Input />
+            </Form.Item>
+          </Grid>
+        )}
+  
+        {/* Deductions & Loans */}
+        {payrollSettings?.deductions && (
+          <Grid item xs={12} sm={6}>
+            <Form.Item label="Deductions & Loans" name={['salary_details', 'DLoansAMT']}>
+              <Input />
+            </Form.Item>
+          </Grid>
+        )}
+      </Grid>
+    );
+  };
+  
 
  
 
@@ -1290,229 +1430,19 @@ rules={[
         </TabPane>
 
           <TabPane tab="Salary details" key="5">
-            {/* <div className="form-row">
-              <div className="form-col">
-                <Form.Item label="Employee Gross Pay" name={['salary_details', 'CTCpayAMT']} rules={[{ required: true, message: 'Please enter Employee CTC value' }]}>
-                  <Input />
-                </Form.Item>
-              </div>
-
-              <div className="form-col">
-                <Form.Item label="Basic Pay" name={['salary_details', 'BasicpayAMT']} rules={[{ required: true, message: 'Please enter Basic pay value' }]}>
-                  <Input />
-                </Form.Item>
-              </div>
-
-              <div className="form-col">
-                <Form.Item label="DA Pay" name={['salary_details', 'DApayAMT']} rules={[{ required: true, message: 'Please enter Basic pay value' }]}>
-                  <Input />
-                </Form.Item>
-              </div>
-            </div>
-
-            
-            <div className="form-col">
-                <Form.Item label="HRA Pay" name={['salary_details', 'HRApayAMT']} rules={[{ required: true, message: 'Please enter HRA pay value' }]}>
-                  <Input />
-                </Form.Item>
-              </div> */}
-
-            <div className="form-row">
-              <div className="form-col">
-              <Form.Item
-                label="Employee Gross Pay"
-                name={['salary_details', 'CTCpayAMT']}
-                rules={[
-                  { required: true, message: 'Please enter Employee CTC value' },
-                  { pattern: /^[0-9]*$/, message: 'Gross pay must be a numeric value' }
-                ]}
-              >
-                <Input value={grossPay} onChange={handleGrossPayChange} />
-              </Form.Item>
-              {/* <Form.Item
-                label="Employee Gross Pay"
-                name={['salary_details', 'CTCpayAMT']}
-                rules={[{ required: true, message: 'Please enter Employee CTC value' }]}
-              >
-                <Input value={grossPay} onChange={handleGrossPayChange} />
-              </Form.Item> */}
-              </div>
-
-              <div className="form-col">
-                <Form.Item
-                  label="Basic Pay"
-                  name={['salary_details', 'BasicpayAMT']}
-                  rules={[{ required: true, message: 'Please enter Basic pay value' }]}
-                >
-                  <Input value={form.getFieldValue('salary_details.BasicpayAMT')} onChange={handleBasicPayChange} />
-                </Form.Item>
-              </div>
-              
-              <div className="form-col">
-                <Form.Item
-                  label="HRA Pay"
-                  name={['salary_details', 'HRApayAMT']}
-                  rules={[{ required: true, message: 'Please enter HRA pay value' }]}
-                >
-                  <Input value={form.getFieldValue('salary_details.HRApayAMT')} onChange={handleHraPayChange} />
-                </Form.Item>
-              </div>
-            </div>
-
-            {payrollSettings?.da_enabled && (
-              <div className="form-col">
-                  <Form.Item
-                    label="DA Pay"
-                    name={['salary_details', 'DApayAMT']}
-                    rules={[{ required: true, message: 'Please enter DA pay value' }]}
-                  >
-                    <Input value={form.getFieldValue('salary_details.DApayAMT')} onChange={handleDaPayChange} />
-                  </Form.Item>
-              </div>
-            )}
-
-            {/* {payrollSettings?.reimbursements && Object.keys(payrollSettings.reimbursements).length > 0 && (
-              <>
-                {Object.entries(payrollSettings.reimbursements).map(([name, amount], index) => (
-                  <div className="form-col" key={index}>
-                    <Form.Item label={name} name={['reimbursements', name]}>
-                      <Input defaultValue={amount} />
-                    </Form.Item>
-                  </div>
-                ))}
-              </>
-            )} */}
-            {/* {payrollSettings?.reimbursements && Object.keys(payrollSettings.reimbursements).length > 0 && (
-              <>
-                {Object.entries(payrollSettings.reimbursements).map(([name, amount], index) => (
-                  <div className="form-col" key={index}>
-                    <Form.Item label={name} name={['reimbursements', name]}>
-                      <Input defaultValue={amount} />
-                    </Form.Item>
-                  </div>
-                ))}
-              </>
-            )} */}
-
-            {payrollSettings?.reimbursements && Object.keys(payrollSettings.reimbursements).length > 0 && (
-              <>
-                {Object.entries(payrollSettings.reimbursements).map(([name, amount], index) => (
-                  <div className="form-col" key={index}>
-                    <Form.Item label={name} name={['salary_details', 'reimbursements', name]}>
-                      <Input
-                        defaultValue={amount}
-                        onChange={(e) => handleReimbursementChange(name, e.target.value)}
-                      />
-                    </Form.Item>
-                  </div>
-                ))}
-              </>
-            )}
-    
-            {payrollSettings?.variable_pay && (
-              <div className="form-col">
-                <Form.Item label="Variable Pay" name={['salary_details', 'VariableAMT']}>
-                  {/* <Input onChange={calculateSpecialAllowances} /> */}
-                  <Input />
-                </Form.Item>
-              </div>
-            )}
-
-            {payrollSettings?.quarterly_allowance && (
-              <div className="form-col">
-                <Form.Item label="Quarterly Allowance" name={['salary_details', 'QAllowanceAMT']}>
-                  {/* <Input onChange={calculateSpecialAllowances} /> */}
-                  <Input />
-                </Form.Item>
-              </div>
-            )}
-
-            {payrollSettings?.quarterly_bonus && (
-              <div className="form-col">
-                <Form.Item label="Quarterly Bonus" name={['salary_details', 'QBonusAMT']}>
-                  {/* <Input onChange={calculateSpecialAllowances} /> */}
-                  <Input />
-                </Form.Item>
-              </div>
-            )}  
-
-            {payrollSettings?.annual_bonus && (
-              <div className="form-col">
-                <Form.Item label="Annual Bonus" name={['salary_details', 'ABonusAMT']}>
-                  {/* <Input onChange={calculateSpecialAllowances} /> */}
-                  <Input />
-                </Form.Item>
-              </div>
-            )}
-
-            {payrollSettings?.special_allowances && (
-              <div className="form-col">
-                <Form.Item label="Special Allowances" name={['salary_details', 'SAllowancesAMT']}>
-                  <Input value={specialAllowances} readOnly />
-                </Form.Item>
-              </div>
-            )}
-
-            {/* {payrollSettings?.pf && (
-              <>
-                {payrollSettings?.pf_type === 'Both' ? (
-                  <Form.Item label="Select PF Type" name={['salary_details', 'pfType']}>
-                    <Select onChange={handlePfTypeChange}>
-                      <Select.Option value="!=15k">No Limit for PF Deduction</Select.Option>
-                      <Select.Option value="15k">Wage limit 15k</Select.Option>
-                    </Select>
-                  </Form.Item>
-                ) : (
-                  <Form.Item label="Provident Fund (PF)" name={['salary_details', 'PFAMT']}>
-                    <Input value={pfValue} readOnly />
-                  </Form.Item>
-                )}
-              </>
-            )} */}
-            {payrollSettings?.pf_type === 'Both' && (
-              <Form.Item label="Select PF Type" name={['salary_details', 'pf_type']}>
-                <Select onChange={handlePfTypeChange}>
-                  <Select.Option value="!=15k">No Limit for PF Deduction</Select.Option>
-                  <Select.Option value="15k">Wage limit 15k</Select.Option>
-                </Select>
-              </Form.Item>
-            )}
-
-            {/* <Form.Item label="Provident Fund (PF)" name={['salary_details', 'PFAMT']}>
-              <Input value={pfValue} readOnly />
-            </Form.Item> */}
-       
-            {payrollSettings?.voluntary_pf && (
-              <div className="form-col">
-                <Form.Item label="Voluntary Provident Fund" name={['salary_details', 'VPFAMT']}>
-                  <Input />
-                </Form.Item>
-              </div>
-            )}
-
-            {/* {payrollSettings?.esi && (
-              <div className="form-col">
-                <Form.Item label="ESI" name={['salary_details', 'ESIAMT']}>
-                  <Input />
-                </Form.Item>
-              </div>
-            )} */}
-
-            {/* {payrollSettings?.professional_tax && (
-              <div className="form-col">
-                  <Form.Item label="Professional Tax" name={['salary_details', 'PTAMT']}>
-                      <Input value={professionalTax} readOnly /> 
-                  </Form.Item>
-              </div>
-            )} */}
-
-            {payrollSettings?.deductions && (
-              <div className="form-col">
-                <Form.Item label="Deductions & Loans" name={['salary_details', 'DLoansAMT']}>
-                  <Input />
-                </Form.Item>
-              </div>
-            )}
+            {/* Render the SalaryDetails component inside the Salary Details tab */}
+            <SalaryDetails
+              payrollSettings={payrollSettings}
+              form={form}
+              handleGrossPayChange={handleGrossPayChange}
+              handleBasicPayChange={handleBasicPayChange}
+              handleHraPayChange={handleHraPayChange}
+              handleDaPayChange={handleDaPayChange}
+              handleReimbursementChange={handleReimbursementChange}
+              handlePfTypeChange={handlePfTypeChange}
+              grossPay={grossPay}
+              specialAllowances={specialAllowances}
+          />
           </TabPane>
       </Tabs>
 
