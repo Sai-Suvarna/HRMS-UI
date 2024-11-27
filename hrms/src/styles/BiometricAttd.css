@@ -1,0 +1,44 @@
+/* Apply to the main container */
+.biometric-container {
+    font-family: Arial, sans-serif;
+    margin: 80px auto;
+    max-width: 500px;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    background-color: #f9f9f9;
+}
+
+/* Header styling */
+h2 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+/* Input file styling */
+.fileupload-button {
+    display: block;
+    margin: 10px auto 20px;
+    padding: 5px;
+    font-size: 16px;
+    width: 50%;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+/* Centering the button wrapper */
+.button-wrapper {
+    display: flex;
+    justify-content: center;
+}
+
+/* Message styling */
+p {
+    text-align: center;
+    font-size: 14px;
+    color: #333;
+}
+
+

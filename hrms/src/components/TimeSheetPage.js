@@ -1,18 +1,14 @@
 import React, { useState, useEffect} from 'react';
 import * as XLSX from 'xlsx';
 import { useNavigate } from 'react-router-dom';
-// import './TimeSheetPage.css';
 import '../styles/TimeSheetPage.css';
-
 import Box from '@mui/material/Box';
 import Stepper from '@mui/material/Stepper';
 import Step from '@mui/material/Step';
 import StepLabel from '@mui/material/StepLabel';
 import Button from '@mui/material/Button';
 import Navbar from '../pages/Navbar';
-import axios from 'axios';
 import api from "../api";
-
 
 const steps = [
   'Download Excel Template',
@@ -185,9 +181,10 @@ const TimeSheetPage = () => {
 
   const fetchEmployeeData = async () => {
     const companyId = localStorage.getItem('companyId');
+    console.log("CID:",companyId)
     try {
 
-      const response = await api.get(`/api/employee/work-details/?company_id=${companyId}/`);
+      const response = await api.get(`/api/employee/work-details/?company_id=${companyId}`);
 
       // const response = await fetch(`http://localhost:8000/api/employee/work-details/?company_id=${companyId}`);
   
@@ -759,22 +756,40 @@ const TimeSheetPage = () => {
       localStorage.setItem('month', updatedTimeSheetData[0].month); // Save the first entry's month
     }
 
+
   
     // If all validations pass, submit the timesheet data
-    try {
-      const response = await fetch('http://127.0.0.1:8000/timesheet/upload/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(updatedTimeSheetData),
-      });
+    // try {
+    //   const response = await fetch('http://127.0.0.1:8000/timesheet/upload/', {
+    //     method: 'POST',
+    //     headers: {
+    //       'Content-Type': 'application/json',
+    //     },
+    //     body: JSON.stringify(updatedTimeSheetData),
+    //   });
   
-      if (response.ok) {
+    //   if (response.ok) {
+    //     setSuccessMessage('Data uploaded successfully!');
+    //   } else {
+    //     const data = await response.json();
+    //     setErrorMessages([data.message || 'Error uploading data.']);
+    //   }
+    // } catch (error) {
+    //   console.error('Error uploading data:', error);
+    //   setErrorMessages(['There was an error in submitting your data.']);
+    // }
+    // };
+    try {
+      const response = await api.post('/timesheet/upload/', updatedTimeSheetData, {
+        headers: {
+          'Content-Type': 'application/json', // Ensure the content type is JSON
+        },
+      });
+    
+      if (response.status === 200) {
         setSuccessMessage('Data uploaded successfully!');
       } else {
-        const data = await response.json();
-        setErrorMessages([data.message || 'Error uploading data.']);
+        setErrorMessages([response.data.message || 'Error uploading data.']);
       }
     } catch (error) {
       console.error('Error uploading data:', error);

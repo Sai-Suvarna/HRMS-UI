@@ -60,9 +60,9 @@ const EmployeeWorkDetailsForm = ({ formData, errors, handleChange, setFormData, 
       error={!!errors.employmentStatus}
       helperText={errors.employmentStatus}
       required>
-        <MenuItem value="active">Active</MenuItem>
-          <MenuItem value="inactive">Inactive</MenuItem>
-          <MenuItem value="terminated">Terminated</MenuItem>
+        <MenuItem value="Active">Active</MenuItem>
+          <MenuItem value="Inactive">Inactive</MenuItem>
+          <MenuItem value="Terminated">Terminated</MenuItem>
         </TextField>
   
     <TextField

@@ -8,6 +8,8 @@ import CompanySetup from './components/CompanySetup';
 import EmployeeSetup from './components/EmployeeSetup';
 import EmployeeSetup2 from './components/EmployeeSetup2';
 
+import BiometricAttd from './components/BiometricAttd';
+
 // import PayroleSetup from './components/PayroleSetup';
 import EmployeeList from './components/EmployeeList';
 import TimeSheetPage from './components/TimeSheetPage';
@@ -52,6 +54,7 @@ function App() {
           <Route path="/logout" element={<Logout />} />
           <Route path="/companydetails" element={<ProtectedRoute> <CompanyDetails /> </ProtectedRoute>} /> 
           <Route path="/Validation" element={<ProtectedRoute><Validation /></ProtectedRoute>} />
+          <Route path="/biometric" element={<ProtectedRoute><BiometricAttd /></ProtectedRoute>}/>
 
         </Routes>
       </div>

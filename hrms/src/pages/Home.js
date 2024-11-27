@@ -94,6 +94,7 @@ const Home = () => {
               )}
             </li>
             <li><a href="/employeelist">Employee List</a></li>
+            <li><a href="/biometric">Biometric Attendance</a></li>
             <li><a href="/attendance">Attendance</a></li>
             <li><a href="/Validation">Pay Slip</a></li>
           </ul>

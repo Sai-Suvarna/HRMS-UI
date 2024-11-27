@@ -95,7 +95,7 @@ useEffect(() => {
                 <tr key={employee.work_details.wdId}>
                      <td>
         {employee.work_details.empId}
-        {employee.work_details.employmentStatus === 'active' ? (
+        {employee.work_details.employmentStatus === 'Active' ? (
           <FaEdit
             style={{ cursor: 'pointer', marginLeft: '10px', fontSize: '20px' }}
             onClick={() => handleEditEmployee(employee)}
