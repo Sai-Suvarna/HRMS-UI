@@ -11,6 +11,7 @@ import SocialSecurityDetailsForm from './SocialSecurityDetailsForm';
 import EmployeeWorkDetailsForm from './EmployeeWorkDetailsForm';
 import PersonalDetailsFields from './PersonalDetailsFields'; 
 import InsuranceDetailsForm from './InsuranceDetailsForm';
+import SalaryDetailsForm from './SalaryDetailsForm';
 import api from "../api";
 import { Modal, message, Input } from 'antd'; 
 import { Radio, RadioGroup, FormControlLabel, FormControl, FormLabel } from '@mui/material';
@@ -894,6 +895,24 @@ const handleRehire = async () => {
       // }
       
 
+      case 4: // Salary Details validation
+        // Validate CTCpayAMT (Gross Pay)
+        if (!formData.salary_details.CTCpayAMT || isNaN(formData.salary_details.CTCpayAMT)) {
+          stepErrors.CTCpayAMT = 'Gross Pay must be a valid number';
+        }
+
+        // Validate BasicpayAMT
+        if (!formData.salary_details.BasicpayAMT || isNaN(formData.salary_details.BasicpayAMT)) {
+          stepErrors.BasicpayAMT = 'Basic Pay must be a valid number';
+        }
+
+        // Validate HRApayAMT
+        if (!formData.salary_details.HRApayAMT || isNaN(formData.salary_details.HRApayAMT)) {
+          stepErrors.HRApayAMT = 'HRA Pay must be a valid number';
+        }
+
+        break;
+
       default:
         break;
     }
@@ -1039,6 +1058,18 @@ const dataToSubmit = {
                 errors={errors}
                 handleChange={handleChange}
                 setFormData={setFormData}
+            />
+          </div>
+        );
+
+        case 4: // Salary Details Form
+        return (
+          <div className="employee-setup-form">
+            <SalaryDetailsForm 
+              formData={formData} 
+              errors={errors} 
+              handleChange={handleChange} 
+              setFormData={setFormData} 
             />
           </div>
         );

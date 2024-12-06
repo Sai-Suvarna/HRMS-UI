@@ -512,6 +512,20 @@ const EmployeeSetup = () => {
             </Form.Item>
           </Grid>
         )}
+
+        {/* Render dynamic reimbursement fields */}
+        {payrollSettings?.reimbursements && Object.keys(payrollSettings.reimbursements).length > 0 && (
+          Object.entries(payrollSettings.reimbursements).map(([name, amount], index) => (
+            <Grid item xs={12} sm={6} key={index}>
+              <Form.Item label={name} name={['salary_details', 'reimbursements', name]}>
+                <Input
+                  defaultValue={amount}
+                  onChange={(e) => handleReimbursementChange(name, e.target.value)}
+                />
+              </Form.Item>
+            </Grid>
+          ))
+        )}
   
         {/* Special Allowances */}
         {payrollSettings?.special_allowances && (

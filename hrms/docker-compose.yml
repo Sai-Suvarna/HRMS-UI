@@ -1,0 +1,35 @@
+version: "3.8"
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - REACT_APP_API_URL=http://127.0.0.1:8000  # Link to the backend if you're running it in Docker as well
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+
+
+# version: '3'
+
+# services:
+#   ui:
+#     build:
+#       context: .
+#       dockerfile: Dockerfile
+#     ports:
+#       - 3000:80
+#     environment:
+#       - REACT_APP_API_URL=http://api:8000
+#     depends_on:
+#       - api
+
+# volumes:
+#   db-data:

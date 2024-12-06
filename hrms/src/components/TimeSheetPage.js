@@ -517,17 +517,18 @@ const fetchEmployeeData = async () => {
           // grossPay = Math.round((CTCpayAMT * attendance) / no_of_days);
           // basic = Math.round(grossPay * basicPercentage);
           // hra = Math.round(basic * hraPercentage);
-          // da = 0;
-          // specialAllowance = grossPay - basic - hra - reimbursementTotal;
           const E_Basic = Math.round(CTCpayAMT * basicPercentage);
+          // const E_DA = Math.round(E_Basic * daPercentage);
           const E_HRA = Math.round(E_Basic * hraPercentage);
           const E_Reambesments = reimbursementTotal;
           const E_SA = CTCpayAMT - (E_Basic + E_HRA + E_Reambesments);
           basic = Math.round((E_Basic * attendance) / no_of_days);
           hra = Math.round((E_HRA * attendance) / no_of_days);
+          // da = Math.round((E_DA * attendance) / no_of_days);
           specialAllowance = Math.round((E_SA * attendance) / no_of_days);
           grossPay = basic + hra + specialAllowance;
           da = 0;
+          // specialAllowance = grossPay - basic - hra - reimbursementTotal;
         } else {
           // Default case if neither DA nor HRA is enabled
           basic = Math.round((CTCpayAMT * basicPercentage * attendance) / no_of_days);
