@@ -15,6 +15,10 @@ import { Grid } from '@mui/material';
 // import './EmployeeSetup.css'; 
 import '../styles/EmployeeSetup.css'
 
+import { fetchUserId, fetchCompanyId } from '../helpers/CompanyId';
+
+// import { fetchUserId, fetchCompanyId, fetchRole } from '../helpers/CompanyId';
+
 import { useNavigate } from 'react-router-dom';
 
 import { jwtDecode } from 'jwt-decode'; 
@@ -32,6 +36,7 @@ const EmployeeSetup = () => {
   const [pfType, setPfType] = useState(''); // State for selected PF Type
   const [pfValue, setPfValue] = useState(0); // State to store calculated PF value
   const [professionalTax, setProfessionalTax] = useState(0); // State for Professional Tax
+  const [error, setError] = useState(null);
 
   
   
@@ -82,13 +87,33 @@ const EmployeeSetup = () => {
   checkJWTToken();
     const fetchCompensationSettings = async () => {
       try {
-        const companyId = localStorage.getItem('companyId');
+        // const companyId = localStorage.getItem('companyId');
+        const userId = await fetchUserId();
+        if (!userId) {
+          setError('User ID not found');
+          return;
+        }
+
+        // const role = await fetchRole(); // Fetch userId using helper function
+        // console.log("Role:",role)
+        // if (!role) {
+        //   setError('Role not found');
+        //   return;
+        // }
+  
+        // const companyId = await fetchCompanyId(userId, role); 
+  
+        const companyId = await fetchCompanyId(userId);
+        if (!companyId) {
+          setError('Company ID not found');
+          return;
+        }
         if (!companyId) {
           console.error('Company ID not found');
           return;
         }
 
-        const response = await axios.get(`http://localhost:8000/payroll-settings/${companyId}/`, {
+        const response = await axios.get(`http://localhost:8000/api/payroll-settings/${companyId}/`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('access')}`, // Pass the token in the header
           },
@@ -280,7 +305,18 @@ const EmployeeSetup = () => {
       // Check if the JWT token is valid before submitting the form
     checkJWTToken();
       // Get the company_id from localStorage
-      const company_id = localStorage.getItem('companyId');
+      // const company_id = localStorage.getItem('companyId');
+      const userId = await fetchUserId();
+        if (!userId) {
+          setError('User ID not found');
+          return;
+        }
+  
+        const company_id = await fetchCompanyId(userId);
+        if (!company_id) {
+          setError('Company ID not found');
+          return;
+        }
       if (!company_id) {
           console.error('Company ID not found');
           return;

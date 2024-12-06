@@ -4,6 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import Navbar from '../pages/Navbar'; 
 import '../styles/PayroleSet.css';
 import api from "../api";
+import { fetchUserId, fetchCompanyId } from '../helpers/CompanyId';
+
 
 const EmployeeCompensationForm = () => {
   const [formData, setFormData] = useState({
@@ -26,7 +28,30 @@ const EmployeeCompensationForm = () => {
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
     const navigate = useNavigate();
-    const companyId = localStorage.getItem('companyId');
+    // const companyId = localStorage.getItem('companyId');
+    const [companyId, setCompanyId] = useState(null);
+  // Fetch the companyId on component mount
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const userId = await fetchUserId();
+        // const role = await fetchRole();
+        if (userId) {
+          const companyId = await fetchCompanyId(userId);
+          if (companyId) {
+            setCompanyId(companyId); // Set companyId in state
+          } else {
+            console.error("Failed to fetch companyId.");
+          }
+        } else {
+          console.error("Failed to fetch userId.");
+        }
+      } catch (error) {
+        console.error("Error fetching user or company data:", error);
+      }
+    };
+    fetchData();
+  }, []);
     const [totals, setTotals] = useState({
         basic: 0,
         hra: 0,
@@ -222,8 +247,9 @@ const EmployeeCompensationForm = () => {
 
       try {
         // Submit the data using the pre-configured API instance
-        const response = await api.post('/api/payroledetails/', dataToSubmit);
-    
+        // const response = await api.post('/api/payroledetails/', dataToSubmit);
+        const response = await api.post('api/employee-compensation/', dataToSubmit);
+
         if (response.status === 201) {
           // Handle success
           console.log('Data successfully submitted:', response.data);

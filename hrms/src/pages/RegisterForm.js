@@ -29,13 +29,6 @@ const RegisterForm = () => {
   const [success, setSuccess] = useState(false);
   const navigate = useNavigate(); // Initialize useNavigate
 
-  // const handleChange = (e) => {
-  //   setFormData({
-  //     ...formData,
-  //     [e.target.name]: e.target.value,
-  //   });   
-  // };
-
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prevData) => ({
@@ -69,7 +62,7 @@ const RegisterForm = () => {
     try {
       const response = await api.post('/api/register/', formData, {
         headers: {
-          'Content-Type': 'application/json',  // Ensure the content type is JSON
+          'Content-Type': 'application/json',  
         },
       });
       // const response = await axios.post('http://localhost:8000/api/register/', formData); // Update URL
@@ -166,6 +159,19 @@ const RegisterForm = () => {
                 required
               />
             </div>
+
+            <div className="register-form-group">
+              <label htmlFor="role">Role:</label>
+              <input
+                type="text"
+                id="role"
+                name="role"
+                value={formData.role}
+                onChange={handleChange}
+                required
+              />
+            </div>
+
 
             {error && <p className="error">{error}</p>}
             {success && <p className="success">Registration successful!</p>}

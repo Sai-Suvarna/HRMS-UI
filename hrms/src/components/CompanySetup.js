@@ -9,6 +9,8 @@ import StepLabel from '@mui/material/StepLabel';
 import Button from '@mui/material/Button';
 import api from "../api";
 
+import { fetchUserId } from '../helpers/CompanyId';
+
 const steps = ['Admin Info', 'Company Info', 'Organizational Rules'];
 
 const CompanySetup = () => {
@@ -32,6 +34,10 @@ const CompanySetup = () => {
   const navigate = useNavigate();
   const [activeStep, setActiveStep] = useState(0);
   const [errors, setErrors] = useState({});
+  // const [error, setError] = useState(null);
+
+
+
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -98,24 +104,52 @@ const CompanySetup = () => {
     setErrors(prevErrors => ({ ...prevErrors, [name]: error }));
   };
 
+  // const fetchUserID = async () => {
+  //   const token = localStorage.getItem(ACCESS_TOKEN);
+  //   if (token) {
+  //     try {
+  //       const decodedToken = jwtDecode(token);
+  //       console.log('Decoded Token:', decodedToken); // Debugging
+  //       const userId = decodedToken.user_id;
+  //       console.log("Fetched User ID:", userId); // Debugging
+  //       setUserId(userId); 
+  //     } catch (error) {
+  //       console.error('Error decoding token:', error);
+  //     }
+  //   } else {
+  //     console.error('No token found in localStorage');
+  //   }
+  // };
+  
+  // useEffect(() => {
+  //   fetchUserID();
+  // }, []);
+  
+
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     const formData = new FormData();
 
+    const userId = await fetchUserId();
+    if (!userId) {
+      setErrors('User ID not found');
+      return;
+    }
+
      // Append form values to formData
     Object.entries(formValues).forEach(([key, value]) => {
       if (value) formData.append(key, value);
     });
-
-    // Retrieve the user_id from localStorage
-    const userId = localStorage.getItem('userId');
+    
     if (!userId) {
-        console.error('No user ID found in localStorage');
+        console.error('No user ID found');
         return;
     }
     formData.append('user_id', userId);  // Add user_id to form data
-    
+    console.log('Submitting form with User ID:', userId);
+
     const url = '/api/companydetails/'; // Endpoint path
 
     try {
@@ -133,7 +167,7 @@ const CompanySetup = () => {
 
             if (companyId) {
                 // Save the companyId to localStorage and log it for debugging
-                localStorage.setItem('companyId', companyId);
+                // localStorage.setItem('companyId', companyId);
                 console.log("Company Id:", companyId);
 
                 // Call function to update completion status
@@ -150,16 +184,19 @@ const CompanySetup = () => {
     }
   };
   
-  const updateCompletionStatus = async () => {
-    const userId = localStorage.getItem('userId');  // Retrieve the user ID
-    const companyId = localStorage.getItem('companyId');  // Ensure companyId is retrieved
+  const updateCompletionStatus = async (companyId) => {
+
+    const userId = await fetchUserId();
+    if (!userId) {
+      setErrors('User ID not found');
+      return;
+    }
+
     const url1 = `/api/company-status/${userId}/`;
     try {
       await api.patch(url1, {
         company_id: companyId,  
-        is_company_setup_complete: true,
-        role: "admin",
-        is_admin: true
+        is_company_setup_complete: true
       });
 
     } catch (error) {

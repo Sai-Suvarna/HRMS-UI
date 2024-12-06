@@ -9,6 +9,8 @@ import StepLabel from '@mui/material/StepLabel';
 import Button from '@mui/material/Button';
 import Navbar from '../pages/Navbar';
 import api from "../api";
+import { fetchUserId, fetchCompanyId } from '../helpers/CompanyId';
+
 
 const steps = [
   'Download Excel Template',
@@ -81,7 +83,7 @@ const TimeSheetPage = () => {
   const navigate = useNavigate(); // useNavigate for navigation
   // const [timesheets, setTimesheets] = useState([]);
   // const [loading, setLoading] = useState(true); // State for loading indicator
-  // const [error, setError] = useState(null);
+  const [error, setError] = useState(null);
   const [timesheets, setTimesheets] = useState([]);
   const [employeeData, setEmployeeData] = useState([]);
   const [calculatedData, setCalculatedData] = useState([]);
@@ -143,13 +145,36 @@ const TimeSheetPage = () => {
   };
 
   const fetchTimesheets = async () => {
-    const companyId = localStorage.getItem('companyId');
+    // const companyId = localStorage.getItem('companyId');
+
+    const userId = await fetchUserId();
+    if (!userId) {
+      setError('User ID not found');
+      return;
+    }
+
+    // const role = await fetchRole(); // Fetch userId using helper function
+    // console.log("Role:",role)
+    // if (!role) {
+    //   setError('Role not found');
+    //   return;
+    // }
+
+    // const companyId = await fetchCompanyId(userId, role); 
+
+
+    const companyId = await fetchCompanyId(userId);
+    if (!companyId) {
+      setError('Company ID not found');
+      return;
+    }
+
     const month = localStorage.getItem('month'); // Retrieve the month from local storage
 
     console.log('Fetching timesheets for company ID:', companyId, 'and month:', month);
 
     try {
-      const response = await api.get(`/timesheet-view/${companyId}/${month}/`);
+      const response = await api.get(`/api/timesheet-view/${companyId}/${month}/`);
         console.log('Fetched Timesheets:', response.data.Attendance_data);
         setTimesheets(response.data.Attendance_data);
     } catch (error) {
@@ -160,12 +185,34 @@ const TimeSheetPage = () => {
     const fetchCompensationSettings = async () => {
       try {
 
-        const companyId = localStorage.getItem('companyId');
+        // const companyId = localStorage.getItem('companyId');
+
+        const userId = await fetchUserId();
+        if (!userId) {
+          setError('User ID not found');
+          return;
+        }
+        // const role = await fetchRole(); // Fetch userId using helper function
+        // console.log("Role:",role)
+        // if (!role) {
+        //   setError('Role not found');
+        //   return;
+        // }
+  
+        // const companyId = await fetchCompanyId(userId, role); 
+    
+    
+        const companyId = await fetchCompanyId(userId);
+        if (!companyId) {
+          setError('Company ID not found');
+          return;
+        }
+
         if (!companyId) {
           console.error('Company ID not found');
           return;
         }
-        const response = await api.get(`/payroll-settings/${companyId}/`);
+        const response = await api.get(`/api/payroll-settings/${companyId}/`);
 
         // const response = await axios.get(`http://localhost:8000/payroll-settings/${companyId}/`);
         console.log('Fetched Payroll Settings:', response.data); // Debug: Check if data is fetched
@@ -179,37 +226,114 @@ const TimeSheetPage = () => {
       fetchCompensationSettings();
     }, []);
 
-  const fetchEmployeeData = async () => {
-    const companyId = localStorage.getItem('companyId');
-    console.log("CID:",companyId)
-    try {
+//   const fetchEmployeeData = async () => {
+//     const companyId = localStorage.getItem('companyId');
+//     console.log("CID:",companyId)
+//     try {
 
-      const response = await api.get(`/api/employee/work-details/?company_id=${companyId}`);
+//       // const response = await api.fetch(`/api/employee/work-details/?company_id=${companyId}`);
 
-      // const response = await fetch(`http://localhost:8000/api/employee/work-details/?company_id=${companyId}`);
+//       // const response = await fetch(`http://localhost:8000/api/employee/work-details/?company_id=${companyId}`);
   
-      if (!response.ok) {
-        console.error('Failed to fetch employee data:', response.statusText);
-        return [];
-      }
+
+//       // const response = await fetch(`http://localhost:8000/api/employee/work-details/?company_id=${companyId}`, {
+//       //   method: 'GET', 
+//       //   headers: {
+//       //       'Authorization': `Bearer ${localStorage.getItem('access')}`, 
+//       //       'Content-Type': 'application/json', 
+//       //   },
+//       // });
+
+//     // const response = await api.get(`/api/employee/work-details/?company_id=${companyId}`, {
+      
+//     //   headers: {
+//     //       'Content-Type': 'application/json', 
+//     //   },
+//     // });
+
+//   const response = await api.get(`/api/employee/work-details/`, {
+//     params: { company_id: companyId }, // Clean way to handle query parameters
+//     headers: {
+//         'Content-Type': 'application/json', // Optional, depending on API requirements
+//     },
+// });
   
-      const data = await response.json();
-      console.log('API Response:', data); // Log the entire response for debugging
+
+
+//       if (!response.ok) {
+//         console.error('Failed to fetch employee data:', response.statusText);
+//         return [];
+//       }
   
-      // Ensure the response contains the 'custom_work_details' key
-      if (data && Array.isArray(data.custom_work_details)) {
-        setEmployeeData(data.custom_work_details);
-        return data.custom_work_details;
-      } else {
-        console.error('Invalid response format:', data);
-        return []; // Return an empty array if the structure is not as expected
-      }
-    } catch (error) {
-      console.error('Error fetching employee data:', error);
-      return []; // Handle fetch errors by returning an empty array
-    }
-  };  
+//       const data = await response.json();
+//       console.log('API Response:', data); // Log the entire response for debugging
+  
+//       // Ensure the response contains the 'custom_work_details' key
+//       if (data && Array.isArray(data.custom_work_details)) {
+//         setEmployeeData(data.custom_work_details);
+//         return data.custom_work_details;
+//       } else {
+//         console.error('Invalid response format:', data);
+//         return []; // Return an empty array if the structure is not as expected
+//       }
+//     } catch (error) {
+//       console.error('Error fetching employee data:', error);
+//       return []; // Handle fetch errors by returning an empty array
+//     }
+//   };  
     
+
+const fetchEmployeeData = async () => {
+  // const companyId = localStorage.getItem('companyId');
+  const userId = await fetchUserId();
+  if (!userId) {
+    setError('User ID not found');
+    return;
+  }
+  // const role = await fetchRole(); // Fetch userId using helper function
+  // console.log("Role:",role)
+  // if (!role) {
+  //   setError('Role not found');
+  //   return;
+  // }
+
+  // const companyId = await fetchCompanyId(userId, role); 
+
+
+  const companyId = await fetchCompanyId(userId);
+  if (!companyId) {
+    setError('Company ID not found');
+    return;
+  }
+
+  console.log("CID:", companyId);
+
+  try {
+      const response = await api.get(`/api/employee/work-details/`, {
+          params: { company_id: companyId }, // Query parameters
+          headers: {
+              'Content-Type': 'application/json', // Optional, based on API requirements
+          },
+      });
+
+      // Axios automatically resolves the response; if status is not 2xx, it will throw an error.
+      console.log('API Response:', response.data); // Log the entire response for debugging
+
+      // Ensure the response contains the 'custom_work_details' key
+      if (response.data && Array.isArray(response.data.custom_work_details)) {
+          setEmployeeData(response.data.custom_work_details);
+          return response.data.custom_work_details;
+      } else {
+          console.error('Invalid response format:', response.data);
+          return []; // Return an empty array if the structure is not as expected
+      }
+  } catch (error) {
+      console.error('Error fetching employee data:', error.message || error);
+      return []; // Return an empty array on error
+  }
+};
+
+
   // Effect to fetch timesheets again when entering Step 3
   useEffect(() => {
     if (activeStep === 2) {
@@ -390,11 +514,20 @@ const TimeSheetPage = () => {
           specialAllowance = grossPay - basic - hra - da - reimbursementTotal;
         } else if(!payrollSettings.da_enabled && payrollSettings.hra_enabled) {
           // DA disabled HRA enabled
-          grossPay = Math.round((CTCpayAMT * attendance) / no_of_days);
-          basic = Math.round(grossPay * basicPercentage);
-          hra = Math.round(basic * hraPercentage);
+          // grossPay = Math.round((CTCpayAMT * attendance) / no_of_days);
+          // basic = Math.round(grossPay * basicPercentage);
+          // hra = Math.round(basic * hraPercentage);
+          // da = 0;
+          // specialAllowance = grossPay - basic - hra - reimbursementTotal;
+          const E_Basic = Math.round(CTCpayAMT * basicPercentage);
+          const E_HRA = Math.round(E_Basic * hraPercentage);
+          const E_Reambesments = reimbursementTotal;
+          const E_SA = CTCpayAMT - (E_Basic + E_HRA + E_Reambesments);
+          basic = Math.round((E_Basic * attendance) / no_of_days);
+          hra = Math.round((E_HRA * attendance) / no_of_days);
+          specialAllowance = Math.round((E_SA * attendance) / no_of_days);
+          grossPay = basic + hra + specialAllowance;
           da = 0;
-          specialAllowance = grossPay - basic - hra - reimbursementTotal;
         } else {
           // Default case if neither DA nor HRA is enabled
           basic = Math.round((CTCpayAMT * basicPercentage * attendance) / no_of_days);
@@ -595,7 +728,28 @@ const TimeSheetPage = () => {
     }
 
     const employeeData = await fetchEmployeeData();
-    const companyId = localStorage.getItem('companyId');  // Fetch company ID from local storage
+    // const companyId = localStorage.getItem('companyId');  // Fetch company ID from local storage
+    const userId = await fetchUserId();
+    if (!userId) {
+      setError('User ID not found');
+      return;
+    }
+    // const role = await fetchRole(); // Fetch userId using helper function
+    // console.log("Role:",role)
+    // if (!role) {
+    //   setError('Role not found');
+    //   return;
+    // }
+
+    // const companyId = await fetchCompanyId(userId, role); 
+
+
+    const companyId = await fetchCompanyId(userId);
+    if (!companyId) {
+      setError('Company ID not found');
+      return;
+    }
+    
     if (!Array.isArray(employeeData)) {
       console.error('Expected employeeData to be an array but got:', employeeData);
       return;
@@ -780,7 +934,8 @@ const TimeSheetPage = () => {
     // }
     // };
     try {
-      const response = await api.post('/timesheet/upload/', updatedTimeSheetData, {
+      console.log("HELLO SUVARNA")
+      const response = await api.post('/api/timesheet/upload/', updatedTimeSheetData, {
         headers: {
           'Content-Type': 'application/json', // Ensure the content type is JSON
         },

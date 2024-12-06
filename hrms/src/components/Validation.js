@@ -1,11 +1,10 @@
 // PayCalculationTable.js
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
-// import './Validation.css';
+// import { useNavigate } from 'react-router-dom';
 import '../styles/Validation.css';
 import Navbar from '../pages/Navbar';
 import api from "../api";
+import { fetchUserId, fetchCompanyId } from '../helpers/CompanyId';
 
 import {
   Table,
@@ -21,11 +20,34 @@ import {
 } from '@mui/material';
 
 const PayCalculationTable = () => {
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
   const [months, setMonths] = useState([]);
   const [selectedMonth, setSelectedMonth] = useState('');
   const [payCalculations, setPayCalculations] = useState([]);
-  const companyId = localStorage.getItem('companyId');
+  // const companyId = localStorage.getItem('companyId');
+  const [companyId, setCompanyId] = useState(null);
+  // Fetch the companyId on component mount
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const userId = await fetchUserId();
+        // const role = await fetchRole();
+        if (userId) {
+          const companyId = await fetchCompanyId(userId);
+          if (companyId) {
+            setCompanyId(companyId); // Set companyId in state
+          } else {
+            console.error("Failed to fetch companyId.");
+          }
+        } else {
+          console.error("Failed to fetch userId.");
+        }
+      } catch (error) {
+        console.error("Error fetching user or company data:", error);
+      }
+    };
+    fetchData();
+  }, []);
 
   // Fetch unique month values on component mount
   useEffect(() => {
@@ -47,9 +69,12 @@ const PayCalculationTable = () => {
 // Fetch data for the selected month
 const fetchPayCalculations = async () => {
   try {
-    const response = await axios.get('http://127.0.0.1:8000/api/paycalculation/by-month/', {
+    const response = await api.get('/api/paycalculation/by-month/', {
       params: { month: selectedMonth, company_id: companyId }
     });
+    // const response = await axios.get('http://127.0.0.1:8000/api/paycalculation/by-month/', {
+    //   params: { month: selectedMonth, company_id: companyId }
+    // });
     setPayCalculations(response.data);
   } catch (error) {
     console.error('Error fetching pay calculations:', error);

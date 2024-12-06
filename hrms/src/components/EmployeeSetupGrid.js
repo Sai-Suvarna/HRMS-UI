@@ -4,6 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import Navbar from '../pages/Navbar';
 import '../styles/EmployeeSetupGrid.css'
 import api from "../api";
+import { fetchUserId, fetchCompanyId } from '../helpers/CompanyId';
+// import { fetchUserId, fetchCompanyId, fetchRole } from '../helpers/CompanyId';
 
 const EmployeeSetupGrid = () => {
   const [employees, setEmployees] = useState([]);
@@ -14,7 +16,29 @@ const EmployeeSetupGrid = () => {
 
     const fetchEmployees = async () => {
       try {
-        const companyId = localStorage.getItem('companyId');
+        // const companyId = localStorage.getItem('companyId');
+
+        const userId = await fetchUserId();
+        if (!userId) {
+          setError('User ID not found');
+          return;
+        }
+
+        // const role = await fetchRole(); // Fetch userId using helper function
+        // console.log("Role:",role)
+        // if (!role) {
+        //   setError('Role not found');
+        //   return;
+        // }
+  
+        // const companyId = await fetchCompanyId(userId, role); 
+    
+        const companyId = await fetchCompanyId(userId);
+        if (!companyId) {
+          setError('Company ID not found');
+          return;
+        }
+
         if (!companyId) {
           throw new Error("Company ID is missing");
         }
@@ -64,7 +88,7 @@ const EmployeeSetupGrid = () => {
               {/* Main Headers */}
               <tr>
                 <th rowSpan="2">Emp ID</th>
-                <th colSpan="17">Work Details</th>
+                <th colSpan="18">Work Details</th>
                 <th colSpan="6">Social Security</th>
                 <th colSpan="15">Personal Details</th>
                 <th colSpan="10">Insurance Details</th>
@@ -77,6 +101,7 @@ const EmployeeSetupGrid = () => {
                 {/* Work Details */}
                 <th>Name</th>
                 <th>Status</th>
+                <th>Employment Type</th>
                 <th>Company Email</th>
                 <th>Date of Joining</th>
                 <th>Date of Relieving</th>
@@ -152,6 +177,7 @@ const EmployeeSetupGrid = () => {
                   {/* Work Details */}
                   <td> {`${employee.work_details.firstName} ${employee.work_details.lastName}`}</td>
                   <td> {employee.work_details.employmentStatus}</td>
+                  <td> {employee.work_details.employmentType}</td>
                   <td> {employee.work_details.companyEmailId}</td>
                   <td> {employee.work_details.dateOfJoining}</td>
                   <td> {employee.work_details.dateOfRelieving} </td>

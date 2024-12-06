@@ -12,8 +12,11 @@ import EmployeeWorkDetailsForm from './EmployeeWorkDetailsForm';
 import PersonalDetailsFields from './PersonalDetailsFields'; 
 import InsuranceDetailsForm from './InsuranceDetailsForm';
 import api from "../api";
-import { Modal, message } from 'antd';
+import { Modal, message, Input } from 'antd'; 
+import { Radio, RadioGroup, FormControlLabel, FormControl, FormLabel } from '@mui/material';
 import dayjs from 'dayjs';
+
+import { fetchUserId, fetchCompanyId } from '../helpers/CompanyId';
 
 
 const steps = [
@@ -41,30 +44,16 @@ const [formData, setFormData] = useState({
   const location = useLocation();
   const [rehireMode, setRehireMode] = useState(false);
 
-  // const employeeData = location.state?.employeeData;
   const { employeeData, isEditMode = false, isRehireMode = false } = location.state || {};
-  const [empIdExists, setEmpIdExists] = useState(false);
-  const [newEmpId, setNewEmpId] = useState('');
 
-  // const { employeeData, isEditMode = false } = location.state || {}; // Retrieve from location.state
+  const [changeEmpId, setChangeEmpId] = React.useState(false);
+  const [isJoiningDateChanged, setIsJoiningDateChanged] = useState(false); 
+
+  const [newEmpId, setNewEmpId] = React.useState(formData.work_details.empId);
+  const [newJoiningDate, setNewJoiningDate] = React.useState(dayjs(formData.work_details.dateOfJoining).format('YYYY-MM-DD'));
+
   console.log("EData:",employeeData);
   console.log("Edit Mode:",isEditMode);
-
-  // useEffect(() => {
-  //   if ( employeeData) {
-  //       console.log("HELLO");
-  //     setFormData((prevFormData) => ({
-  //       ...prevFormData,
-  //       work_details: { ...employeeData.work_details },
-  //       social_security_details: { ...employeeData.social_security_details },
-  //       personal_details: { ...employeeData.personal_details },
-  //       insurance_details: { ...employeeData.insurance_details },
-  //       salary_details: { ...employeeData.salary_details },
-  //     }));
-      
-  //   }
-  //   setDataload(true);
-  // }, [ employeeData]);
 
   useEffect(() => {
     if (employeeData) {
@@ -273,13 +262,14 @@ const formatToLocalDate = (date) => {
 //   }
 // };
 
+
 // const handleRehire = async () => {
 //   try {
 //     console.log("ID:", formData.work_details.wdId);
 
 //     const response = await api.get(`/api/employee/${formData.work_details.wdId}/`);
 
-//     if (response.data && response.data.work_details && response.data.work_details.empId && response.data.personal_details) {
+//     if (response.data && response.data.work_details && response.data.work_details.empId) {
 //       const existingEmpId = response.data.work_details.empId;
 //       console.log("existingEmpId:", existingEmpId);
 //       console.log("formData:", formData.work_details.empId);
@@ -290,7 +280,50 @@ const formatToLocalDate = (date) => {
 //       const newJoiningDate = formData.work_details.dateOfJoining;
 //       console.log("New Joining Date:", newJoiningDate);
 
-//       const checkJoiningDate = async (onDateUpdate) => {
+//       // Check for changes in employee details
+//       const checkForDetailsChanges = () => {
+//         const fieldsToCheck = [
+//           'department', 'currentRole', 'reportingManager', 'previousEmployer',
+//           'currentAddress', 'permanentAddress', 'generalContact', 'emergencyContact',
+//           'relationship', 'relationshipName', 'location'
+//         ];
+
+//         const changedFields = fieldsToCheck.filter(field => {
+//           const responseValue = response.data.work_details[field] || response.data.personal_details[field];
+//           const formDataValue = formData.work_details[field] || formData.personal_details[field];
+//           return responseValue !== formDataValue;
+//         });
+
+//         return changedFields.length > 0; // Return true if any field has changed
+//       };
+
+//       // Function to update the employee data
+//       const updateEmployeeData = async (joiningDate) => {
+//         const updatedFormData = {
+//           ...formData,
+//           work_details: {
+//             ...formData.work_details,
+//             previousDateOfJoining: previousJoiningDate,
+//             dateOfJoining: joiningDate,
+//             employmentStatus: 'Active',
+//           },
+//         };
+
+//         try {
+//           const editResponse = await api.patch(`/api/employee/${formData.work_details.wdId}/`, updatedFormData);
+
+//           if (editResponse.status === 200) {
+//             message.success('Employee details updated successfully.');
+//             navigate('/employeelist');
+//           }
+//         } catch (error) {
+//           console.error('Error updating employee details:', error);
+//           message.error('Failed to update employee details.');
+//         }
+//       };
+
+//       // Function to check the joining date
+//       const checkJoiningDate = async () => {
 //         if (newJoiningDate === previousJoiningDate || !newJoiningDate) {
 //           Modal.confirm({
 //             title: 'Joining Date Unchanged',
@@ -317,69 +350,41 @@ const formatToLocalDate = (date) => {
 //         }
 //       };
 
-//       const checkDetailsChange = () => {
-//         console.log("Suvarna")
-//         // Combine all work details and personal details for comparison
-//         const unchangedDetails = {
-//           // Work details
-//           department: response.data.work_details.department,
-//           currentRole: response.data.work_details.currentRole,
-//           reportingManager: response.data.work_details.reportingManager,
-//           previousEmployer: response.data.work_details.previousEmployer,
-//           // Personal details
-//           currentAddress: response.data.personal_details.currentAddress,
-//           permanentAddress: response.data.personal_details.permanentAddress,
-//           generalContact: response.data.personal_details.generalContact,
-//           emergencyContact: response.data.personal_details.emergencyContact,
-//           relationship: response.data.personal_details.relationship,
-//           relationshipName: response.data.personal_details.relationshipName,
-//           location: response.data.personal_details.location,
-//         };
-      
-//         // Log the details to compare
-//         console.log('FormData Work Details:', formData.work_details);
-//         console.log('Response Work Details:', response.data.work_details);
-//         console.log('FormData Personal Details:', formData.personal_details);
-//         console.log('Response Personal Details:', response.data.personal_details);
-      
-//         // Compare fields and log differences
-//         const unchangedFields = Object.keys(unchangedDetails).filter(field => {
-//           console.log(`Comparing field: ${field}`);
-//           console.log(`formData.${field}:`, formData.work_details[field] || formData.personal_details[field]);
-//           console.log(`response.${field}:`, unchangedDetails[field]);
-//           return formData.work_details[field] === unchangedDetails[field] || formData.personal_details[field] === unchangedDetails[field];
-//         });
-      
-//         console.log('unchangedFields:', unchangedFields);  // Debugging output
-      
-//         return unchangedFields.length === Object.keys(unchangedDetails).length; // If all fields are unchanged
-//       };
-      
-//       const updateEmployeeData = async (joiningDate) => {
-//         const updatedFormData = {
-//           ...formData,
-//           work_details: {
-//             ...formData.work_details,
-//             previousDateOfJoining: previousJoiningDate,
-//             dateOfJoining: joiningDate,
-//             employmentStatus: 'active',
-//           },
-//         };
+//       // Function that handles date update and employee details check
+//       const onDateUpdate = (formattedDate) => {
+//         // After handling the date update, we check if any employee details have changed
+//         const detailsChanged = checkForDetailsChanges();
 
-//         try {
-//           const editResponse = await api.patch(`/api/employee/${formData.work_details.wdId}/`, updatedFormData);
-
-//           if (editResponse.status === 200) {
-//             message.success('Employee status and joining date updated successfully.');
-//             navigate('/employeelist');
-//           }
-//         } catch (error) {
-//           console.error('Error updating joining date:', error.response?.data || error.message);
-//           message.error('Failed to update joining date.');
+//         if (detailsChanged) {
+//           Modal.confirm({
+//             title: 'Employee Details Changed',
+//             content: 'Some employee details have changed. Do you want to proceed with the new data?',
+//             okText: 'Yes, Proceed with Changes',
+//             cancelText: 'No, Cancel',
+//             onOk: () => {
+//               updateEmployeeData(formattedDate); 
+//             },
+//             onCancel: () => {
+//               message.info('Action canceled');
+//             },
+//           });
+//         } else {
+//           Modal.confirm({
+//             title: 'Employee Details Unchanged',
+//             content: 'No changes have been made to the employee details. Do you want to continue with the same data?',
+//             okText: 'Yes, Continue',
+//             cancelText: 'No, Cancel',
+//             onOk: () => {
+//               updateEmployeeData(formattedDate); // Proceed with updating employee data
+//             },
+//             onCancel: () => {
+//               message.info('Action canceled');
+//             },
+//           });
 //         }
 //       };
 
-//       // If empId matches, handle rehire logic
+//       // First check: empId
 //       if (existingEmpId === formData.work_details.empId) {
 //         Modal.confirm({
 //           title: 'Employee ID Exists',
@@ -387,7 +392,8 @@ const formatToLocalDate = (date) => {
 //           okText: 'Yes, Update',
 //           cancelText: 'No, Provide New ID',
 //           onOk: () => {
-//             checkJoiningDate(updateEmployeeData);
+//             // If empId matches, move to checking the joining date
+//             checkJoiningDate();
 //           },
 //           onCancel: () => {
 //             setEmpIdExists(true);
@@ -395,81 +401,20 @@ const formatToLocalDate = (date) => {
 //           },
 //         });
 //       } else {
-//         // Handle the case where empId is changed
+//         // If empId does not match, update empId and proceed
 //         setEmpIdExists(false);
-//         checkJoiningDate(async (joiningDate) => {
-//           // Check if the details in both work_details and personal_details have not changed
-//           if (checkDetailsChange()) {
-//             console.log('Details are unchanged. Triggering Modal.');  // Debugging output
-//             Modal.confirm({
-//               title: 'Details Unchanged',
-//               content: `The employee's details (work and personal details) have not been changed. Do you want to proceed with the unchanged values or update them?`,
-//               okText: 'Yes, Proceed',
-//               cancelText: 'No, Provide New Data',
-//               onOk: async () => {
-//                 // Proceed with existing data
-//                 const updatedFormData = {
-//                   ...formData,
-//                   work_details: {
-//                     ...formData.work_details,
-//                     dateOfJoining: joiningDate,
-//                     previousDateOfJoining: previousJoiningDate,
-//                     employmentStatus: 'active',
-//                   },
-//                 };
-
-//                 try {
-//                   const editResponse = await api.patch(`/api/employee/${formData.work_details.wdId}/`, updatedFormData);
-
-//                   if (editResponse.status === 200) {
-//                     message.success('Employee details updated successfully.');
-//                     navigate('/employeelist');
-//                   }
-//                 } catch (error) {
-//                   console.error('Error updating employee details:', error);
-//                   message.error('Failed to update employee details.');
-//                 }
-//               },
-//               onCancel: () => {
-//                 // Allow user to update fields manually if they choose 'No'
-//                 // You can handle the case here if needed
-//                 message.info('Please update the necessary fields and try again.');
-//               },
-//             });
-//           } else {
-//             // Proceed with new data
-//             const updatedFormData = {
-//               ...formData,
-//               work_details: {
-//                 ...formData.work_details,
-//                 dateOfJoining: joiningDate,
-//                 previousDateOfJoining: previousJoiningDate,
-//                 employmentStatus: 'active',
-//               },
-//             };
-
-//             try {
-//               const editResponse = await api.patch(`/api/employee/${formData.work_details.wdId}/`, updatedFormData);
-
-//               if (editResponse.status === 200) {
-//                 message.success('Employee details updated successfully.');
-//                 navigate('/employeelist');
-//               }
-//             } catch (error) {
-//               console.error('Error updating employee details:', error);
-//               message.error('Failed to update employee details.');
-//             }
-//           }
-//         });
+//         checkJoiningDate();
 //       }
+
 //     } else {
-//       message.error('No work details or personal details found for the given ID.');
+//       message.error('No work details found for the given ID.');
 //     }
 //   } catch (error) {
 //     console.error('Error checking Employee ID:', error);
 //     message.error('Failed to check Employee ID.');
 //   }
 // };
+
 
 
 const handleRehire = async () => {
@@ -480,47 +425,32 @@ const handleRehire = async () => {
 
     if (response.data && response.data.work_details && response.data.work_details.empId) {
       const existingEmpId = response.data.work_details.empId;
+      const existingJoiningDate = response.data.work_details.dateOfJoining;
+      const formEmpId = formData.work_details.empId;
+      const formJoiningDate = formData.work_details.dateOfJoining;
+
       console.log("existingEmpId:", existingEmpId);
-      console.log("formData:", formData.work_details.empId);
+      console.log("existingJoiningDate:", existingJoiningDate);
+      console.log("formEmpId:", formEmpId);
+      console.log("formJoiningDate:", formJoiningDate);
 
-      const previousJoiningDate = response.data.work_details.dateOfJoining;
-      console.log("Previous Joining Date:", previousJoiningDate);
+      const isEmpIdChanged = existingEmpId !== formEmpId;
+      const isJoiningDateChanged = existingJoiningDate !== formJoiningDate;
 
-      const newJoiningDate = formData.work_details.dateOfJoining;
-      console.log("New Joining Date:", newJoiningDate);
-
-      // Check for changes in employee details
-      const checkForDetailsChanges = () => {
-        const fieldsToCheck = [
-          'department', 'currentRole', 'reportingManager', 'previousEmployer',
-          'currentAddress', 'permanentAddress', 'generalContact', 'emergencyContact',
-          'relationship', 'relationshipName', 'location'
-        ];
-
-        const changedFields = fieldsToCheck.filter(field => {
-          const responseValue = response.data.work_details[field] || response.data.personal_details[field];
-          const formDataValue = formData.work_details[field] || formData.personal_details[field];
-          return responseValue !== formDataValue;
-        });
-
-        return changedFields.length > 0; // Return true if any field has changed
-      };
-
-      // Function to update the employee data
-      const updateEmployeeData = async (joiningDate) => {
+      const updateEmployeeData = async (joiningDate, newEmpId = existingEmpId) => {
         const updatedFormData = {
           ...formData,
           work_details: {
             ...formData.work_details,
-            previousDateOfJoining: previousJoiningDate,
-            dateOfJoining: joiningDate,
+            previousDateOfJoining: existingJoiningDate,
+            dateOfJoining: dayjs(joiningDate).format('YYYY-MM-DD'),
             employmentStatus: 'Active',
+            empId: newEmpId,
           },
         };
 
         try {
           const editResponse = await api.patch(`/api/employee/${formData.work_details.wdId}/`, updatedFormData);
-
           if (editResponse.status === 200) {
             message.success('Employee details updated successfully.');
             navigate('/employeelist');
@@ -531,90 +461,98 @@ const handleRehire = async () => {
         }
       };
 
-      // Function to check the joining date
-      const checkJoiningDate = async () => {
-        if (newJoiningDate === previousJoiningDate || !newJoiningDate) {
-          Modal.confirm({
-            title: 'Joining Date Unchanged',
-            content: `The joining date has not been modified. Please provide a new joining date. The current joining date will be moved to "Previous Joining Date".`,
-            okText: 'Update Joining Date',
-            cancelText: 'Cancel',
-            onOk: async () => {
-              const newDatePrompt = prompt("Enter the new joining date (YYYY-MM-DD):");
-              if (!newDatePrompt || isNaN(Date.parse(newDatePrompt))) {
-                message.error("Invalid date format. Please provide a valid date in YYYY-MM-DD format.");
-                return;
-              }
-
-              const formattedPromptDate = formatToLocalDate(newDatePrompt);
-              onDateUpdate(formattedPromptDate);
-            },
-            onCancel: () => {
-              message.info('Joining date update canceled.');
-            },
-          });
-        } else {
-          const formattedDate = formatToLocalDate(newJoiningDate);
-          onDateUpdate(formattedDate);
-        }
-      };
-
-      // Function that handles date update and employee details check
-      const onDateUpdate = (formattedDate) => {
-        // After handling the date update, we check if any employee details have changed
-        const detailsChanged = checkForDetailsChanges();
-
-        if (detailsChanged) {
-          Modal.confirm({
-            title: 'Employee Details Changed',
-            content: 'Some employee details have changed. Do you want to proceed with the new data?',
-            okText: 'Yes, Proceed with Changes',
-            cancelText: 'No, Cancel',
-            onOk: () => {
-              updateEmployeeData(formattedDate); 
-            },
-            onCancel: () => {
-              message.info('Action canceled');
-            },
-          });
-        } else {
-          Modal.confirm({
-            title: 'Employee Details Unchanged',
-            content: 'No changes have been made to the employee details. Do you want to continue with the same data?',
-            okText: 'Yes, Continue',
-            cancelText: 'No, Cancel',
-            onOk: () => {
-              updateEmployeeData(formattedDate); // Proceed with updating employee data
-            },
-            onCancel: () => {
-              message.info('Action canceled');
-            },
-          });
-        }
-      };
-
-      // First check: empId
-      if (existingEmpId === formData.work_details.empId) {
+      if (isEmpIdChanged || isJoiningDateChanged) {
         Modal.confirm({
-          title: 'Employee ID Exists',
-          content: 'Do you want to continue with the same Employee ID?',
-          okText: 'Yes, Update',
-          cancelText: 'No, Provide New ID',
+          title: 'Do you wish to change the following data?',
+          content: (
+            <div>
+              {isEmpIdChanged && (
+                <p>
+                  <strong>EmpId: </strong>{existingEmpId} → {formEmpId}
+                </p>
+              )}
+              {isJoiningDateChanged && (
+                <p>
+                  <strong>Joining Date: </strong>{dayjs(existingJoiningDate).format('YYYY-MM-DD')} → {dayjs(formJoiningDate).format('YYYY-MM-DD')}
+                </p>
+              )}
+            </div>
+          ),
+          okText: 'Yes, update',
+          cancelText: 'No, cancel',
           onOk: () => {
-            // If empId matches, move to checking the joining date
-            checkJoiningDate();
+            updateEmployeeData(formJoiningDate, formEmpId);
           },
           onCancel: () => {
-            setEmpIdExists(true);
-            message.warning('Please provide a new Employee ID.');
+            message.info('Action canceled.');
           },
         });
       } else {
-        // If empId does not match, update empId and proceed
-        setEmpIdExists(false);
-        checkJoiningDate();
-      }
+        let updatedEmpId = existingEmpId;
+        let updatedJoiningDate = existingJoiningDate;
 
+        const ModalForm = () => {
+          const [changeEmpId, setChangeEmpId] = React.useState(false);
+          const [changeJoiningDate, setChangeJoiningDate] = React.useState(false);
+          const [newEmpId, setNewEmpId] = React.useState(existingEmpId);
+          const [newJoiningDate, setNewJoiningDate] = React.useState(dayjs(existingJoiningDate).format('YYYY-MM-DD'));
+
+          return (
+            <div>
+              <p><strong>Current EmpId:</strong> {existingEmpId}</p>
+              <p><strong>Current Joining Date:</strong> {dayjs(existingJoiningDate).format('YYYY-MM-DD')}</p>
+              <FormControl>
+                <FormLabel>Change EmpId?</FormLabel>
+                <RadioGroup
+                  value={changeEmpId ? 'yes' : 'no'}
+                  onChange={(e) => setChangeEmpId(e.target.value === 'yes')}
+                >
+                  <FormControlLabel value="yes" control={<Radio />} label="Yes, change EmpId" />
+                  <FormControlLabel value="no" control={<Radio />} label="No, keep existing EmpId" />
+                </RadioGroup>
+                {changeEmpId && (
+                  <Input
+                    placeholder="Enter new EmpId"
+                    value={newEmpId}
+                    onChange={(e) => setNewEmpId(e.target.value)}
+                  />
+                )}
+              </FormControl>
+              <br />
+              <FormControl>
+                <FormLabel>Change Joining Date?</FormLabel>
+                <RadioGroup
+                  value={changeJoiningDate ? 'yes' : 'no'}
+                  onChange={(e) => setChangeJoiningDate(e.target.value === 'yes')}
+                >
+                  <FormControlLabel value="yes" control={<Radio />} label="Yes, change Joining Date" />
+                  <FormControlLabel value="no" control={<Radio />} label="No, keep existing Joining Date" />
+                </RadioGroup>
+                {changeJoiningDate && (
+                  <Input
+                    type="date"
+                    value={newJoiningDate}
+                    onChange={(e) => setNewJoiningDate(e.target.value)}
+                  />
+                )}
+              </FormControl>
+            </div>
+          );
+        };
+
+        Modal.confirm({
+          title: 'Do you want to update the details?',
+          content: <ModalForm />,
+          okText: 'Proceed',
+          cancelText: 'Cancel',
+          onOk: () => {
+            updateEmployeeData(updatedJoiningDate, updatedEmpId);
+          },
+          onCancel: () => {
+            message.info('Action canceled.');
+          },
+        });
+      }
     } else {
       message.error('No work details found for the given ID.');
     }
@@ -625,16 +563,96 @@ const handleRehire = async () => {
 };
 
 
+// const handleRehire = async () => {
+//   try {
+//     const response = await api.get(`/api/employee/${formData.work_details.wdId}/`);
 
+//     if (response.data && response.data.work_details && response.data.work_details.empId) {
+//       const existingEmpId = response.data.work_details.empId;
+//       const existingJoiningDate = response.data.work_details.dateOfJoining;
+//       const formEmpId = formData.work_details.empId;
+//       const formJoiningDate = formData.work_details.dateOfJoining;
 
+//       const isEmpIdChanged = existingEmpId !== formEmpId;
+//       const isJoiningDateChanged = existingJoiningDate !== formJoiningDate;
 
+//       const updateEmployeeData = async (joiningDate, newEmpId = existingEmpId) => {
+//         const updatedFormData = {
+//           ...formData,
+//           work_details: {
+//             ...formData.work_details,
+//             previousDateOfJoining: existingJoiningDate,
+//             dateOfJoining: dayjs(joiningDate).format('YYYY-MM-DD'),
+//             employmentStatus: 'Active',
+//             empId: newEmpId,
+//           },
+//         };
 
+//         try {
+//           const editResponse = await api.patch(`/api/employee/${formData.work_details.wdId}/`, updatedFormData);
+//           if (editResponse.status === 200) {
+//             message.success('Employee details updated successfully.');
+//             navigate('/employeelist');
+//           }
+//         } catch (error) {
+//           console.error('Error updating employee details:', error);
+//           message.error('Failed to update employee details.');
+//         }
+//       };
 
-
-
-
-  
-
+//       if (isEmpIdChanged && isJoiningDateChanged) {
+//         Modal.confirm({
+//           title: 'Do you wish to change the following data?',
+//           content: (
+//             <div>
+//               <p><strong>EmpId: </strong>{existingEmpId} → {formEmpId}</p>
+//               <p><strong>Joining Date: </strong>{dayjs(existingJoiningDate).format('YYYY-MM-DD')} → {dayjs(formJoiningDate).format('YYYY-MM-DD')}</p>
+//             </div>
+//           ),
+//           okText: 'Yes, update',
+//           cancelText: 'No, cancel',
+//           onOk: () => updateEmployeeData(formJoiningDate, formEmpId),
+//           onCancel: () => message.info('Action canceled.'),
+//         });
+//       } else if (isEmpIdChanged) {
+//         Modal.confirm({
+//           title: 'EmpId has changed. Do you wish to update?',
+//           content: (
+//             <div>
+//               <p><strong>EmpId: </strong>{existingEmpId} → {formEmpId}</p>
+//               <p><strong>Current Joining Date: </strong>{dayjs(existingJoiningDate).format('YYYY-MM-DD')}</p>
+//             </div>
+//           ),
+//           okText: 'Yes, update',
+//           cancelText: 'No, cancel',
+//           onOk: () => updateEmployeeData(existingJoiningDate, formEmpId),
+//           onCancel: () => message.info('Action canceled.'),
+//         });
+//       } else if (isJoiningDateChanged) {
+//         Modal.confirm({
+//           title: 'Joining Date has changed. Do you wish to update?',
+//           content: (
+//             <div>
+//               <p><strong>Joining Date: </strong>{dayjs(existingJoiningDate).format('YYYY-MM-DD')} → {dayjs(formJoiningDate).format('YYYY-MM-DD')}</p>
+//               <p><strong>Current EmpId: </strong>{existingEmpId}</p>
+//             </div>
+//           ),
+//           okText: 'Yes, update',
+//           cancelText: 'No, cancel',
+//           onOk: () => updateEmployeeData(formJoiningDate),
+//           onCancel: () => message.info('Action canceled.'),
+//         });
+//       } else {
+//         message.info('No changes detected. Action canceled.');
+//       }
+//     } else {
+//       message.error('No work details found for the given ID.');
+//     }
+//   } catch (error) {
+//     console.error('Error checking Employee ID:', error);
+//     message.error('Failed to check Employee ID.');
+//   }
+// };
 
 
   const handleEmpIdChange = (e) => {
@@ -898,7 +916,18 @@ const handleRehire = async () => {
 
   const handleSubmit = async () => {
     console.log("HI HELLO")
-    const company_id = localStorage.getItem('companyId');
+    // const company_id = localStorage.getItem('companyId');
+    const userId = await fetchUserId();
+    if (!userId) {
+      setErrors('User ID not found');
+      return;
+    }
+
+    const company_id = await fetchCompanyId(userId);
+    if (!company_id) {
+      setErrors('Company ID not found');
+      return;
+    }
     if (!company_id) {
       console.error('Company ID not found');
       message.error('Company ID is required');

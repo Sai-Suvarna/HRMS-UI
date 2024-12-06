@@ -1,10 +1,10 @@
-
 import React, { useEffect, useState } from 'react';
 import Navbar from '../pages/Navbar';
 import { FaEdit } from 'react-icons/fa'; 
 import '../styles/CompanyDetails.css';
 import api from "../api";
 import { useNavigate } from 'react-router-dom';
+import { fetchUserId, fetchCompanyId } from '../helpers/CompanyId';
 
 const CompanyDetails = () => {
   const [company, setCompany] = useState(null);
@@ -23,15 +23,43 @@ const CompanyDetails = () => {
 
   useEffect(() => {
 
-    const companyId = localStorage.getItem('companyId');
-    if (!companyId) {
-      setError('Company ID not found');
-      return;
-    }
+    const getCompanyDetails = async () => {
+      try {
+        const userId = await fetchUserId(); // Fetch userId using helper function
+        console.log("UID:",userId)
+        if (!userId) {
+          setError('User ID not found');
+          return;
+        }
+
+        // const role = await fetchRole(); // Fetch userId using helper function
+        // console.log("Role:",role)
+        // if (!role) {
+        //   setError('Role not found');
+        //   return;
+        // }
+
+        const companyId = await fetchCompanyId(userId); // Fetch companyId using helper function
+        console.log("UUUID:",userId)
+
+        console.log("COMID:",companyId)
+        if (!companyId) {
+          setError('Company ID not found');
+          return;
+        }
+
+
+    // const companyId = localStorage.getItem('companyId');
+    // if (!companyId) {
+    //   setError('Company ID not found');
+    //   return;
+    // }
     const url = `/api/companydetails/retrieve/${companyId}/`; 
-    api.get(url)
+    // api.get(url)
+    const response = await api.get(url);
+
   
-      .then(response => {
+      // .then(response => {
         const updatedData = {
           ...response.data,
           logo_url: response.data.logo_url ? `http://localhost:8000${response.data.logo_url}` : null,
@@ -42,12 +70,18 @@ const CompanyDetails = () => {
         };
         setCompany(updatedData);
         setEditableCompany(updatedData);
-      })
-      .catch(error => {
+      // })
+      // .catch(error => {
+      } catch (error) {
+
         console.error('Error fetching company details:', error);
         setError('Failed to load company details');
-      });
-  }, [navigate]);
+      // });
+  // }, [navigate]);
+}
+};
+getCompanyDetails();
+}, [navigate]);
 
   const handleEdit = () => {
     setIsEditing(true); // Enable editing mode
@@ -83,49 +117,120 @@ const CompanyDetails = () => {
     }
   };
 
-  const handleSave = () => {
-    const companyId = localStorage.getItem('companyId');
-    const formData = new FormData();
+  // const handleSave = () => {
+  //   const companyId = localStorage.getItem('companyId');
+  //   const formData = new FormData();
   
-    // Append non-file data
-    for (const key in editableCompany) {
-      formData.append(key, editableCompany[key]);
-    }
+  //   // Append non-file data
+  //   for (const key in editableCompany) {
+  //     formData.append(key, editableCompany[key]);
+  //   }
   
-    // Append file data
-    if (files.logo) formData.append('logo', files.logo);
-    if (files.coi) formData.append('coi', files.coi);
-    if (files.leave_policy) formData.append('leave_policy', files.leave_policy);
-    if (files.pf_policy) formData.append('pf_policy', files.pf_policy);
-    if (files.labour_law_licence) formData.append('labour_law_licence', files.labour_law_licence);
+  //   // Append file data
+  //   if (files.logo) formData.append('logo', files.logo);
+  //   if (files.coi) formData.append('coi', files.coi);
+  //   if (files.leave_policy) formData.append('leave_policy', files.leave_policy);
+  //   if (files.pf_policy) formData.append('pf_policy', files.pf_policy);
+  //   if (files.labour_law_licence) formData.append('labour_law_licence', files.labour_law_licence);
     
-    const url1 = `/api/companydetails/update/${companyId}/`; 
+  //   const url1 = `/api/companydetails/update/${companyId}/`; 
 
-    api.put(url1, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    })
+  //   api.put(url1, formData, {
+  //     headers: {
+  //       'Content-Type': 'multipart/form-data',
+  //     },
+  //   })
    
-      .then(response => {
-        setCompany({
-          ...response.data,
-        });
-        setEditableCompany(response.data);
-        setIsEditing(false);
-        setFiles({
-          logo: null,
-          coi: null,
-          leave_policy: null,
-          pf_policy: null,
-          labour_law_licence: null,
-        });
-      })
-      .catch(error => {
-        console.error('Error updating company details:', error);
-        setError('Failed to update company details');
+  //     .then(response => {
+  //       setCompany({
+  //         ...response.data,
+  //       });
+  //       setEditableCompany(response.data);
+  //       setIsEditing(false);
+  //       setFiles({
+  //         logo: null,
+  //         coi: null,
+  //         leave_policy: null,
+  //         pf_policy: null,
+  //         labour_law_licence: null,
+  //       });
+  //     })
+  //     .catch(error => {
+  //       console.error('Error updating company details:', error);
+  //       setError('Failed to update company details');
+  //     });
+  // };
+
+  const handleSave = async () => {
+    try {
+      // Get the userId and companyId dynamically using the helper functions
+      const userId = await fetchUserId();
+      if (!userId) {
+        setError('User ID not found');
+        return;
+      }
+
+      // const role = await fetchRole(); // Fetch userId using helper function
+      // console.log("Role:",role)
+      // if (!role) {
+      //   setError('Role not found');
+      //   return;
+      // }
+
+      // const companyId = await fetchCompanyId(userId, role); 
+  
+      const companyId = await fetchCompanyId(userId);
+      if (!companyId) {
+        setError('Company ID not found');
+        return;
+      }
+  
+      // Prepare form data for the request
+      const formData = new FormData();
+    
+      // Append non-file data
+      for (const key in editableCompany) {
+        formData.append(key, editableCompany[key]);
+      }
+    
+      // Append file data if files exist
+      if (files.logo) formData.append('logo', files.logo);
+      if (files.coi) formData.append('coi', files.coi);
+      if (files.leave_policy) formData.append('leave_policy', files.leave_policy);
+      if (files.pf_policy) formData.append('pf_policy', files.pf_policy);
+      if (files.labour_law_licence) formData.append('labour_law_licence', files.labour_law_licence);
+      
+      // Use the companyId in the URL
+      const url1 = `/api/companydetails/update/${companyId}/`;
+  
+      // Make the API request to save the updated company details
+      const response = await api.put(url1, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
       });
+     
+      // Update the company details on success
+      setCompany({
+        ...response.data,
+      });
+      setEditableCompany(response.data);
+      setIsEditing(false);
+  
+      // Reset files after save
+      setFiles({
+        logo: null,
+        coi: null,
+        leave_policy: null,
+        pf_policy: null,
+        labour_law_licence: null,
+      });
+    } catch (error) {
+      console.error('Error updating company details:', error);
+      setError('Failed to update company details');
+    }
   };
+  
 
   if (error) return <p>{error}</p>;
   console.log('Company data:', company); 

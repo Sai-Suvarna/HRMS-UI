@@ -83,6 +83,8 @@ import React, { useState, useEffect } from 'react';
 import Navbar from '../pages/Navbar'; 
 import '../styles/PaySlipValidation.css';
 import api from "../api";
+import { fetchUserId, fetchCompanyId } from '../helpers/CompanyId';
+
 
 
 const EmpSalaryDetails = () => {
@@ -93,7 +95,28 @@ const EmpSalaryDetails = () => {
     useEffect(() => {
         const fetchEmployees = async () => {
             try {
-              const companyId = localStorage.getItem('companyId');
+            //   const companyId = localStorage.getItem('companyId');
+            const userId = await fetchUserId();
+            if (!userId) {
+              setError('User ID not found');
+              return;
+            }
+            // const role = await fetchRole(); // Fetch userId using helper function
+            // console.log("Role:",role)
+            // if (!role) {
+            //   setError('Role not found');
+            //   return;
+            // }
+      
+            // const companyId = await fetchCompanyId(userId, role); 
+        
+        
+            const companyId = await fetchCompanyId(userId);
+            if (!companyId) {
+              setError('Company ID not found');
+              return;
+            }
+
               if (!companyId) {
                 throw new Error('Company ID not found in localStorage.');
               }

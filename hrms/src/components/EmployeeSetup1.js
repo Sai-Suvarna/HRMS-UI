@@ -72,7 +72,7 @@ const EmployeeSetup = () => {
           return;
         }
 
-        const response = await axios.get(`http://localhost:8000/payroll-settings/${companyId}/`, {
+        const response = await axios.get(`http://localhost:8000/api/payroll-settings/${companyId}/`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('access')}`, // Pass the token in the header
           },

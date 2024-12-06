@@ -5,6 +5,9 @@ import Navbar from '../pages/Navbar';
 import '../styles/EmployeeList.css'
 import api from "../api";
 import { BiAddToQueue } from "react-icons/bi";
+import { fetchUserId, fetchCompanyId } from '../helpers/CompanyId';
+// import { fetchUserId, fetchCompanyId, fetchRole } from '../helpers/CompanyId';
+
 
 
 const EmployeeList = () => {
@@ -16,7 +19,29 @@ useEffect(() => {
 
   const fetchEmployees = async () => {
     try {
-      const companyId = localStorage.getItem('companyId');
+      // const companyId = localStorage.getItem('companyId');
+
+      const userId = await fetchUserId();
+      if (!userId) {
+        setError('User ID not found');
+        return;
+      }
+
+      // const role = await fetchRole(); // Fetch userId using helper function
+      // console.log("Role:",role)
+      // if (!role) {
+      //   setError('Role not found');
+      //   return;
+      // }
+
+      // const companyId = await fetchCompanyId(userId, role); 
+
+      const companyId = await fetchCompanyId(userId);
+      if (!companyId) {
+        setError('Company ID not found');
+        return;
+      }
+
       if (!companyId) {
         throw new Error("Company ID is missing");
       }
@@ -93,7 +118,7 @@ useEffect(() => {
             <tbody>
               {employees.map((employee) => (
                 <tr key={employee.work_details.wdId}>
-                     <td>
+                     {/* <td>
         {employee.work_details.empId}
         {employee.work_details.employmentStatus === 'Active' ? (
           <FaEdit
@@ -107,11 +132,38 @@ useEffect(() => {
             
           />
         )}
-      </td>
+      </td> */}
+
+<td>
+  {employee.work_details.empId}
+  {employee.work_details.employmentStatus === 'Active' ? (
+    <FaEdit
+      style={{
+        cursor: 'pointer',
+        marginLeft: '10px',
+        fontSize: '20px',
+        color: 'green', // Green color for Edit icon
+      }}
+      onClick={() => handleEditEmployee(employee)}
+    />
+  ) : (
+    <BiAddToQueue
+      style={{
+        cursor: 'pointer',
+        marginLeft: '10px',
+        fontSize: '20px',
+        color: 'red', // Red color for Add to Queue icon
+      }}
+      onClick={() => handleRehireClick(employee)}
+    />
+  )}
+</td>
+
 
                   <td>
                     <div>Name: {employee.work_details.firstName} {employee.work_details.lastName}</div>
                     <div>Employment Status: {employee.work_details.employmentStatus}</div>
+                    <div>Employment Type: {employee.work_details.employmentType}</div>
                     <div>Comapny Email Id: {employee.work_details.companyEmailId}</div>
                     <div>Date of Joining: {employee.work_details.dateOfJoining}</div>
                     <div>Date of Relieving: {employee.work_details.dateOfRelieving}</div>

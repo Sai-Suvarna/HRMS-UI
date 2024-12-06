@@ -3,17 +3,43 @@ import { jwtDecode } from "jwt-decode";
 import api from "../api";
 import { REFRESH_TOKEN, ACCESS_TOKEN } from "../constants";
 import { useState, useEffect } from "react";
+import PageNotFound from "./PageNotFound";
 
 
-function ProtectedRoute({ children }) {
+
+function ProtectedRoute({ children, restrict}) {
+    console.log("PP:",restrict)
     const [isAuthorized, setIsAuthorized] = useState(null);
+    const [userRole, setUserRole] = useState('');
 
     useEffect(() => {
         auth().catch(() => setIsAuthorized(false))
     }, [])
 
+    useEffect(() => {
+        const fetchUserRole = async () => {
+          const token = localStorage.getItem(ACCESS_TOKEN);
+          if (token) {
+            try {
+              const decodedToken = jwtDecode(token);
+              const userId = decodedToken.user_id;
+              const roleName = decodedToken.role;
+              console.log("RNMAE:",roleName)
+              console.log("ID:",userId)
+              setUserRole(roleName);
+            } catch (error) {
+              console.error('Error fetching user role:', error);
+            }
+          }
+        };
+        if(restrict==true){
+            fetchUserRole();
+        }
+      }, []);
+
     const refreshToken = async () => {
         const refreshToken = localStorage.getItem(REFRESH_TOKEN);
+        console.log("RTOken:",refreshToken)
         try {
             const res = await api.post("/api/token/refresh/", {
                 refresh: refreshToken,
@@ -50,8 +76,9 @@ function ProtectedRoute({ children }) {
     if (isAuthorized === null) {
         return <div>Loading...</div>;
     }
+    // return isAuthorized ? children :<Navigate to="/login" />;
 
-    return isAuthorized ? children : <Navigate to="/login" />;
+    return isAuthorized ? (restrict == true && userRole != 'Admin'? <PageNotFound/>:children ): <Navigate to="/login" />;
 }
 
 export default ProtectedRoute;

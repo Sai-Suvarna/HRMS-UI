@@ -2,7 +2,6 @@ import React from 'react';
 import { TextField, MenuItem } from '@mui/material';
 import { LocalizationProvider, DatePicker } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-// import dayjs, { Dayjs } from 'dayjs';
 import dayjs from 'dayjs';
 
 const EmployeeWorkDetailsForm = ({ formData, errors, handleChange, setFormData, handleEmpIdChange, isRehireMode }) => {
@@ -63,6 +62,26 @@ const EmployeeWorkDetailsForm = ({ formData, errors, handleChange, setFormData, 
         <MenuItem value="Active">Active</MenuItem>
           <MenuItem value="Inactive">Inactive</MenuItem>
           <MenuItem value="Terminated">Terminated</MenuItem>
+        </TextField>
+
+    <TextField
+      select
+      label="Employment Type"
+      name="employmentType"
+      defaultValue={formData.work_details.employmentType}
+      value={formData.work_details.employmentType}
+      onChange={(e)=>{handleChange(e,"work_details")}}
+      fullWidth
+      // error={!!errors.employmentType}
+      // helperText={errors.employmentType}
+      required>
+        <MenuItem value="Full-time">Full-time</MenuItem>
+          <MenuItem value="Part-time">Part-time</MenuItem>
+          <MenuItem value="Intern">Intern</MenuItem>
+          <MenuItem value="Trainee">Trainee</MenuItem>
+          <MenuItem value="Consultant">Consultant</MenuItem>
+          <MenuItem value="Temporary">Temporary</MenuItem>
+          <MenuItem value="Volunteer">Volunteer</MenuItem>
         </TextField>
   
     <TextField
