@@ -136,8 +136,19 @@
   margin-left: 20px; /* Space between the links and profile */
 }
 
+.navbar-logout {
+  display: flex;
+  align-items: center;
+  /* margin-left: 20px;  */
+} 
+
+.navbar-dashboard {
+  display: flex;
+  align-items: center;
+  /* margin-left: 20px;  */
+} 
+
 .profile-icon {
-  font-size: 5;
   color: #f5a623; /* Optional: Change the icon color */
   margin-right: 15px; /* Optional: Increase space between icon and text */
 }

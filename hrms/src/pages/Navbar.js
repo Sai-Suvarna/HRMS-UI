@@ -4,6 +4,7 @@ import '../styles/Navbar.css';
 import { fetchUserId, fetchRole, fetchUserName, fetchCompanyId } from '../helpers/CompanyId';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import api from '../api';
+import ExitToAppIcon from '@mui/icons-material/ExitToApp';
 
 const Navbar = () => {
   const [companyName, setCompanyName] = useState('Default Company');
@@ -39,11 +40,22 @@ const Navbar = () => {
 
         setUserName(userName); // Store username in the state
 
-        const companyId = await fetchCompanyId(userId);
-        if (!companyId) {
-          setError('Company ID not found');
-          return;
-        }
+        if (role === 'Super Admin') {
+          // Set Solivar details for Super Admin
+          setCompanyName('Solivar');
+          setCompanyLogo(null);
+          } else {
+          const companyId = await fetchCompanyId(userId);
+          if (!companyId) {
+            setError('Company ID not found');
+            return;
+          }
+
+        // const companyId = await fetchCompanyId(userId);
+        // if (!companyId) {
+        //   setError('Company ID not found');
+        //   return;
+        // }
 
         // Fetch company details
         const response = await api.get(`/api/companydetails/retrieve/${companyId}/`);
@@ -52,6 +64,7 @@ const Navbar = () => {
         if (companyDetails.logo_url) {
           setCompanyLogo(`http://localhost:8000${companyDetails.logo_url}`);
         }
+      }
       } catch (error) {
         console.error('Error fetching company details:', error);
       }
@@ -70,9 +83,16 @@ const Navbar = () => {
       <div className="navbar-left">
         <img src="logo.png" alt="Solivar Logo" className="app-logo" />
       </div>
-
+{/* 
       <div className="navbar-center">
         <img src={companyLogo} alt="Company Logo" className="company-logo" />
+        <h1 className="company-name">{companyName}</h1>
+      </div> */}
+
+      <div className="navbar-center">
+        {companyLogo && (
+          <img src={companyLogo} alt="Company Logo" className="company-logo" />
+        )}
         <h1 className="company-name">{companyName}</h1>
       </div>
 
@@ -81,13 +101,9 @@ const Navbar = () => {
           <li>
             <Link to="/Home">Dashboard</Link>
           </li>
-          <li>
-            <Link to="/login" onClick={handleLogout}>
-              Logout
-            </Link>
-          </li>
         </ul>
 
+       
         <div className="navbar-profile">
           <AccountCircleIcon
             className="profile-icon"
@@ -96,11 +112,22 @@ const Navbar = () => {
           />
           {showModal && (
             <div className="modal-below-icon">
+              <AccountCircleIcon  style={{ fontSize: '4rem' }} />
+
               <p><strong>Name:</strong> {userName}</p>
               <p><strong>Role:</strong> {role}</p>
+              
             </div>
           )}
         </div>
+
+        <div className="navbar-logout">
+          <ExitToAppIcon
+            className="profile-icon"
+            style={{ fontSize: '2.8rem', cursor: 'pointer'  }}
+            onClick={handleLogout} />
+        </div>
+
       </div>
     </nav>
   );
